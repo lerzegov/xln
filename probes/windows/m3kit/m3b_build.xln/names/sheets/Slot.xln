@@ -1,0 +1,14 @@
+// Sheet Slot, pulled by xln from m3b_build.xlsx: its formula cells in sheet order, then
+// the names local to it that no module owns. Every name here is local to Slot unless
+// the line above it says @workbook. A cell's address (@C6) is set in Excel and read-only;
+// edit the formula after '='. `Name @C6 = ;` is a slot: a name on an empty cell.
+// `Name @C6#` names the cell's spill, `Name @C6` the cell alone: add or remove the `#`.
+
+@workbook
+Revenue @B1# = SEQUENCE(1,3)*10;
+@workbook
+Costs @B2# = 5;
+@workbook
+Tax @B6 = ;
+@workbook
+Far @B9# = SUM(Revenue)*2+Costs;

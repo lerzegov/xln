@@ -1,0 +1,294 @@
+# excel-dim F8 — replace cell formulas at file level (macOS)
+# 2026-10-05T09:16:55
+
+## 1 build: built
+## 2 oracle: oracle saved; plain oracle saved
+## 3 patches
+   p1: drop calcChain=drop, keep stale <v>=False, fullCalcOnLoad=True, calcId=as saved
+      D!C6: old ref C6:C8 -> ref C6, ghosts delete
+      D!F6: old ref F6:F9 -> ref F6, ghosts delete
+      D!H6: old ref H6:H8 -> ref H6:H8, ghosts keep
+      D!J6: old ref J6:J9 -> ref J6:J9, ghosts keep
+      D!L6: old ref L6:L9 -> ref L6, ghosts keep
+      D!N6: old ref N6:N8 -> ref -, ghosts delete
+      Sh!B3: child edited, master ref kept B1:B5
+      Sh!C1: master edited, C2 promoted to master si=1 ref C2:C5 (was C1:C5)
+      Sh!D1: master edited, D2:D5 un-shared (group si=2 D1:D5 removed)
+      Sh!E5: last child edited, master ref E1:E5 -> E1:E4
+   p3: drop calcChain=drop, keep stale <v>=True, fullCalcOnLoad=True, calcId=as saved
+   p4: drop calcChain=drop, keep stale <v>=False, fullCalcOnLoad=False, calcId=as saved
+   p5: drop calcChain=drop, keep stale <v>=True, fullCalcOnLoad=False, calcId=as saved
+   p6: drop calcChain=drop, keep stale <v>=True, fullCalcOnLoad=False, calcId=191029
+   p7: drop calcChain=drop, keep stale <v>=False, fullCalcOnLoad=False, calcId=191029
+   p2: drop calcChain=keep, keep stale <v>=False, fullCalcOnLoad=True, calcId=as saved
+   p2b: drop calcChain=prune, keep stale <v>=False, fullCalcOnLoad=True, calcId=as saved
+      calcChain: removed N!B3 (no formula now)
+   p2c: drop calcChain=prune+a, keep stale <v>=False, fullCalcOnLoad=True, calcId=as saved
+      calcChain: removed D!P6 (array flag changed)
+      calcChain: removed D!N6 (array flag changed)
+      calcChain: removed N!B6 (array flag changed)
+      calcChain: removed N!B5 (array flag changed)
+      calcChain: removed N!B3 (no formula now)
+   q1: metadata.xml created; B1 cm=1 t=array
+   q2: metadata.xml absent; B1 t=array, no cm
+## 4 Excel opens each file (values read before any recalculation request)
+   oracle: workbook f8_oracle.xlsx, sheets 4
+   plain oracle: workbook f8_plain_oracle.xlsx, sheets 1
+   p1: workbook f8_p1.xlsx, sheets 4
+   p3: workbook f8_p3.xlsx, sheets 4
+   p4: workbook f8_p4.xlsx, sheets 4
+   p5: workbook f8_p5.xlsx, sheets 4
+   p6: workbook f8_p6.xlsx, sheets 4
+   p7: workbook f8_p7.xlsx, sheets 4
+   q1: workbook f8_q1.xlsx, sheets 1
+   q2: workbook f8_q2.xlsx, sheets 1
+   => repaired by Excel: none
+
+## 5a main: displayed values on open (oracle | p1 | p3 | p4 | p5 | p6 | p7)
+   N!A1             1 |        1 |        1 |        1 |        1 |        1 |        1    oracle f: 1
+   N!A2             2 |        2 |        2 |        2 |        2 |        2 |        2    oracle f: 2
+   N!A3             3 |        3 |        3 |        3 |        3 |        3 |        3    oracle f: 3
+   N!B1           600 |      600 |      600 |      600 |      600 |       !6 |      600    oracle f: =SUM(A1:A3)*100
+   N!B2            11 |       11 |       11 |       11 |       11 |      !10 |       11    oracle f: =LET(x,A1*10,x+1)
+   N!B3               |          |          |          |          |          |             oracle f: 
+   N!B4            12 | !#VALUE! | !#VALUE! | !#VALUE! | !#VALUE! |       !1 | !#VALUE!    oracle f: =SUM(A1:A3*2)
+   N!B5            12 |       12 |       12 |       12 |       12 |       !1 |        !    oracle f: =SUM(A1:A3*2)
+   N!B6             3 |        3 |        3 |        3 |        3 |       !2 |        !    oracle f: =1+2
+   N!B7             6 |        6 |        6 |        6 |        6 |       !2 |        6    oracle f: =LAMBDA(x,x*2)(A3)
+   N!C1           101 |      101 |      101 |      101 |      101 |       !5 |      101    oracle f: =A1+100
+   N!C2           AB1 |      AB1 |      AB1 |      AB1 |      AB1 |   !hello |      AB1    oracle f: =UPPER("ab")&A1
+   N!C3            14 |       14 |       14 |       14 |       14 |       !7 |       14    oracle f: =XLOOKUP(2,A1:A3,A1:A3)*7
+   N!C4             3 |        3 |        3 |        3 |        3 |       !x |        !    oracle f: =A1:A3*3
+   N!C5             6 |        6 |        6 |        6 |        6 |        ! |        !    oracle f: 
+   N!C6             9 |        9 |        9 |        9 |        9 |        ! |        !    oracle f: 
+   D!E1            15 |       15 |       15 |       15 |       15 |       !6 |       !6    oracle f: =SUM(Spill)
+   D!E2             3 |        3 |        3 |        3 |        3 |      !10 |      !10    oracle f: =SUM(Spill2)
+   D!E3             2 |        2 |        2 |        2 |        2 |       !4 |       !4    oracle f: =ROWS(F6#)
+   D!E4             5 |        5 |        5 |        5 |        5 |       !3 |       !3    oracle f: =ROWS(C6#)
+   D!E5            15 |       15 |       15 |       15 |       15 |       !6 |       !6    oracle f: =SUM(H6#)
+   D!E6             3 |        3 |        3 |        3 |        3 |      !10 |      !10    oracle f: =SUM(J6#)
+   D!E7             3 | !#SPILL! | !#SPILL! | !#SPILL! | !#SPILL! |      !10 |      !10    oracle f: =SUM(L6#)
+   D!C6             1 |        1 |        1 |        1 |        1 |        1 |        !    oracle f: =SEQUENCE(5)
+   D!C7             2 |        2 |        2 |        2 |        2 |        ! |        !    oracle f: 
+   D!C8             3 |        3 |        3 |        3 |        3 |        ! |        !    oracle f: 
+   D!C9             4 |        4 |        4 |        4 |        4 |        ! |        !    oracle f: 
+   D!C10            5 |        5 |        5 |        5 |        5 |        ! |        !    oracle f: 
+   D!F6             1 |        1 |        1 |        1 |        1 |        1 |        !    oracle f: =SEQUENCE(2)
+   D!F7             2 |        2 |        2 |        2 |        2 |        ! |        !    oracle f: 
+   D!F8               |          |          |          |          |          |             oracle f: 
+   D!F9               |          |          |          |          |          |             oracle f: 
+   D!F10              |          |          |          |          |          |             oracle f: 
+   D!H6             1 |        1 |        1 |        1 |        1 |        1 |        !    oracle f: =SEQUENCE(5)
+   D!H7             2 |        2 |        2 |        2 |        2 |        2 |        2    oracle f: 
+   D!H8             3 |        3 |        3 |        3 |        3 |        3 |        3    oracle f: 
+   D!H9             4 |        4 |        4 |        4 |        4 |        ! |        !    oracle f: 
+   D!H10            5 |        5 |        5 |        5 |        5 |        ! |        !    oracle f: 
+   D!J6             1 |        1 |        1 |        1 |        1 |        1 |        !    oracle f: =SEQUENCE(2)
+   D!J7             2 |        2 |        2 |        2 |        2 |        2 |        2    oracle f: 
+   D!J8               |          |          |          |          |       !3 |       !3    oracle f: 
+   D!J9               |          |          |          |          |       !4 |       !4    oracle f: 
+   D!J10              |          |          |          |          |          |             oracle f: 
+   D!L6             1 | !#SPILL! | !#SPILL! | !#SPILL! | !#SPILL! |        1 |        !    oracle f: =SEQUENCE(2)
+   D!L7             2 |        2 |        2 |        2 |        2 |        2 |        2    oracle f: 
+   D!L8               |       !3 |       !3 |       !3 |       !3 |       !3 |       !3    oracle f: 
+   D!L9               |       !4 |       !4 |       !4 |       !4 |       !4 |       !4    oracle f: 
+   D!L10              |          |          |          |          |          |             oracle f: 
+   D!N6            42 |       42 |       42 |       42 |       42 |       !1 |       42    oracle f: =42
+   D!N7               |          |          |          |          |          |             oracle f: 
+   D!N8               |          |          |          |          |          |             oracle f: 
+   D!N9               |          |          |          |          |          |             oracle f: 
+   D!N10              |          |          |          |          |          |             oracle f: 
+   D!P6             1 |        1 |        1 |        1 |        1 |       !7 |        !    oracle f: =SEQUENCE(3)
+   D!P7             2 |        2 |        2 |        2 |        2 |        ! |        !    oracle f: 
+   D!P8             3 |        3 |        3 |        3 |        3 |        ! |        !    oracle f: 
+   D!P9               |          |          |          |          |          |             oracle f: 
+   D!P10              |          |          |          |          |          |             oracle f: 
+   Slot!B1         10 |       10 |       10 |       10 |       10 |        ! |        !    oracle f: =SEQUENCE(1,3)*10
+   Slot!C1         20 |       20 |       20 |       20 |       20 |        ! |        !    oracle f: 
+   Slot!D1         30 |       30 |       30 |       30 |       30 |        ! |        !    oracle f: 
+   Slot!B2         30 |       30 |       30 |       30 |       30 |        ! |        !    oracle f: =SUM(B1#)/2
+   Slot!B6        7.5 |      7.5 |      7.5 |      7.5 |      7.5 |        ! |        !    oracle f: =Costs*0.25
+   Slot!B9        8.5 |      8.5 |      8.5 |      8.5 |      8.5 |        ! |        !    oracle f: =Tax+1
+   Slot!F1         60 |       60 |       60 |       60 |       60 |        ! |        !    oracle f: =SUM(Revenue)
+   Sh!B1            2 |        2 |        2 |        2 |        2 |        2 |        2    oracle f: =A1*2
+   Sh!B2            4 |        4 |        4 |        4 |        4 |        4 |        4    oracle f: =A2*2
+   Sh!B3          300 |      300 |      300 |      300 |      300 |       !6 |      300    oracle f: =A3*100
+   Sh!B4            8 |        8 |        8 |        8 |        8 |        8 |        8    oracle f: =A4*2
+   Sh!B5           10 |       10 |       10 |       10 |       10 |       10 |       10    oracle f: =A5*2
+   Sh!C1         1001 |     1001 |     1001 |     1001 |     1001 |       !2 |     1001    oracle f: =A1+1000
+   Sh!C2            3 |        3 |        3 |        3 |        3 |        3 |        3    oracle f: =A2+1
+   Sh!C3            4 |        4 |        4 |        4 |        4 |        4 |        4    oracle f: =A3+1
+   Sh!C4            5 |        5 |        5 |        5 |        5 |        5 |        5    oracle f: =A4+1
+   Sh!C5            6 |        6 |        6 |        6 |        6 |        6 |        6    oracle f: =A5+1
+   Sh!D1         2001 |     2001 |     2001 |     2001 |     2001 |       !3 |     2001    oracle f: =A1+2000
+   Sh!D2            6 |        6 |        6 |        6 |        6 |        6 |        6    oracle f: =A2*3
+   Sh!D3            9 |        9 |        9 |        9 |        9 |        9 |        9    oracle f: =A3*3
+   Sh!D4           12 |       12 |       12 |       12 |       12 |       12 |       12    oracle f: =A4*3
+   Sh!D5           15 |       15 |       15 |       15 |       15 |       15 |       15    oracle f: =A5*3
+   Sh!E1            4 |        4 |        4 |        4 |        4 |        4 |        4    oracle f: =A1*4
+   Sh!E2            8 |        8 |        8 |        8 |        8 |        8 |        8    oracle f: =A2*4
+   Sh!E3           12 |       12 |       12 |       12 |       12 |       12 |       12    oracle f: =A3*4
+   Sh!E4           16 |       16 |       16 |       16 |       16 |       16 |       16    oracle f: =A4*4
+   Sh!E5         2000 |     2000 |     2000 |     2000 |     2000 |      !20 |     2000    oracle f: =A5*400
+   => values differing from the oracle: p1 5, p3 5, p4 5, p5 5, p6 45, p7 39
+   formula2 differences from the oracle on open:
+      p1 N!B4: oracle '=SUM(A1:A3*2)' vs '=SUM(@A1:A3*2)'
+      p1 N!B7: oracle '=LAMBDA(x,x*2)(A3)' vs '=@LAMBDA(x,@x*2)(A3)'
+      p1 D!L7: oracle '' vs '2'
+      p1 D!L8: oracle '' vs '3'
+      p1 D!L9: oracle '' vs '4'
+      p3 N!B4: oracle '=SUM(A1:A3*2)' vs '=SUM(@A1:A3*2)'
+      p3 N!B7: oracle '=LAMBDA(x,x*2)(A3)' vs '=@LAMBDA(x,@x*2)(A3)'
+      p3 D!L7: oracle '' vs '2'
+      p3 D!L8: oracle '' vs '3'
+      p3 D!L9: oracle '' vs '4'
+      p4 N!B4: oracle '=SUM(A1:A3*2)' vs '=SUM(@A1:A3*2)'
+      p4 N!B7: oracle '=LAMBDA(x,x*2)(A3)' vs '=@LAMBDA(x,@x*2)(A3)'
+      p4 D!L7: oracle '' vs '2'
+      p4 D!L8: oracle '' vs '3'
+      p4 D!L9: oracle '' vs '4'
+      p5 N!B4: oracle '=SUM(A1:A3*2)' vs '=SUM(@A1:A3*2)'
+      p5 N!B7: oracle '=LAMBDA(x,x*2)(A3)' vs '=@LAMBDA(x,@x*2)(A3)'
+      p5 D!L7: oracle '' vs '2'
+      p5 D!L8: oracle '' vs '3'
+      p5 D!L9: oracle '' vs '4'
+      p6 N!B4: oracle '=SUM(A1:A3*2)' vs '=SUM(@A1:A3*2)'
+      p6 N!B7: oracle '=LAMBDA(x,x*2)(A3)' vs '=@LAMBDA(x,@x*2)(A3)'
+      p6 D!L7: oracle '' vs '2'
+      p6 D!L8: oracle '' vs '3'
+      p6 D!L9: oracle '' vs '4'
+      p7 N!B4: oracle '=SUM(A1:A3*2)' vs '=SUM(@A1:A3*2)'
+      p7 N!B7: oracle '=LAMBDA(x,x*2)(A3)' vs '=@LAMBDA(x,@x*2)(A3)'
+      p7 D!L7: oracle '' vs '2'
+      p7 D!L8: oracle '' vs '3'
+      p7 D!L9: oracle '' vs '4'
+
+## 5a plain: displayed values on open (oracle | q1 | q2)
+   P!B1             1 |        1 |        1    oracle f: =SEQUENCE(3)*A1
+   P!B2             2 |        2 |        !    oracle f: 
+   P!B3             3 |        3 |        !    oracle f: 
+   P!C1             6 |        6 |       !1    oracle f: =SUM(B1#)
+   => values differing from the oracle: q1 0, q2 3
+   formula2 differences from the oracle on open:
+
+## 5b stored cells: oracle / p1 as patched / p1 re-saved by Excel (cells that differ anywhere)
+   same D!C10     oracle: v=5                                          patched: (absent)                                     resaved: v=5
+   same D!C6      oracle: cm=1 <f t=array ref=C6:C10>_xlfn.SEQUENCE(5) v=1 patched: cm=1 <f t=array ref=C6>_xlfn.SEQUENCE(5)     resaved: cm=1 <f t=array ref=C6:C10>_xlfn.SEQUENCE(5) v=1
+   same D!C7      oracle: v=2                                          patched: (absent)                                     resaved: v=2
+   same D!C8      oracle: v=3                                          patched: (absent)                                     resaved: v=3
+   same D!C9      oracle: v=4                                          patched: (absent)                                     resaved: v=4
+   same D!E1      oracle: <f>SUM(Spill) v=15                           patched: <f>SUM(Spill) v=6                            resaved: <f>SUM(Spill) v=15
+   same D!E2      oracle: <f>SUM(Spill2) v=3                           patched: <f>SUM(Spill2) v=10                          resaved: <f>SUM(Spill2) v=3
+   same D!E3      oracle: <f>ROWS(_xlfn.ANCHORARRAY(F6)) v=2           patched: <f>ROWS(_xlfn.ANCHORARRAY(F6)) v=4           resaved: <f>ROWS(_xlfn.ANCHORARRAY(F6)) v=2
+   same D!E4      oracle: <f>ROWS(_xlfn.ANCHORARRAY(C6)) v=5           patched: <f>ROWS(_xlfn.ANCHORARRAY(C6)) v=3           resaved: <f>ROWS(_xlfn.ANCHORARRAY(C6)) v=5
+   same D!E5      oracle: <f>SUM(_xlfn.ANCHORARRAY(H6)) v=15           patched: <f>SUM(_xlfn.ANCHORARRAY(H6)) v=6            resaved: <f>SUM(_xlfn.ANCHORARRAY(H6)) v=15
+   same D!E6      oracle: <f>SUM(_xlfn.ANCHORARRAY(J6)) v=3            patched: <f>SUM(_xlfn.ANCHORARRAY(J6)) v=10           resaved: <f>SUM(_xlfn.ANCHORARRAY(J6)) v=3
+   DIFF D!E7      oracle: <f>SUM(_xlfn.ANCHORARRAY(L6)) v=3            patched: <f>SUM(_xlfn.ANCHORARRAY(L6)) v=10           resaved: t=e <f>SUM(_xlfn.ANCHORARRAY(L6)) v=#VALUE!
+   same D!F6      oracle: cm=1 <f t=array ref=F6:F7>_xlfn.SEQUENCE(2) v=1 patched: cm=1 <f t=array ref=F6>_xlfn.SEQUENCE(2)     resaved: cm=1 <f t=array ref=F6:F7>_xlfn.SEQUENCE(2) v=1
+   same D!F7      oracle: v=2                                          patched: (absent)                                     resaved: v=2
+   same D!H10     oracle: v=5                                          patched: (absent)                                     resaved: v=5
+   same D!H6      oracle: cm=1 <f t=array ref=H6:H10>_xlfn.SEQUENCE(5) v=1 patched: cm=1 <f t=array ref=H6:H8>_xlfn.SEQUENCE(5)  resaved: cm=1 <f t=array ref=H6:H10>_xlfn.SEQUENCE(5) v=1
+   same D!H7      oracle: v=2                                          patched: v=2                                          resaved: v=2
+   same D!H8      oracle: v=3                                          patched: v=3                                          resaved: v=3
+   same D!H9      oracle: v=4                                          patched: (absent)                                     resaved: v=4
+   same D!J6      oracle: cm=1 <f t=array ref=J6:J7>_xlfn.SEQUENCE(2) v=1 patched: cm=1 <f t=array ref=J6:J9>_xlfn.SEQUENCE(2)  resaved: cm=1 <f t=array ref=J6:J7>_xlfn.SEQUENCE(2) v=1
+   same D!J7      oracle: v=2                                          patched: v=2                                          resaved: v=2
+   same D!J8      oracle: (absent)                                     patched: v=3                                          resaved: (absent)
+   same D!J9      oracle: (absent)                                     patched: v=4                                          resaved: (absent)
+   DIFF D!L6      oracle: cm=1 <f t=array ref=L6:L7>_xlfn.SEQUENCE(2) v=1 patched: cm=1 <f t=array ref=L6>_xlfn.SEQUENCE(2)     resaved: t=e cm=1 <f t=array ref=L6>_xlfn.SEQUENCE(2) v=#VALUE!
+   same D!L7      oracle: v=2                                          patched: v=2                                          resaved: v=2
+   DIFF D!L8      oracle: (absent)                                     patched: v=3                                          resaved: v=3
+   DIFF D!L9      oracle: (absent)                                     patched: v=4                                          resaved: v=4
+   same D!N6      oracle: <f>42 v=42                                   patched: <f>42                                        resaved: <f>42 v=42
+   same D!P6      oracle: cm=1 <f t=array ref=P6:P8>_xlfn.SEQUENCE(3) v=1 patched: cm=1 <f t=array ref=P6>_xlfn.SEQUENCE(3)     resaved: cm=1 <f t=array ref=P6:P8>_xlfn.SEQUENCE(3) v=1
+   same D!P7      oracle: v=2                                          patched: (absent)                                     resaved: v=2
+   same D!P8      oracle: v=3                                          patched: (absent)                                     resaved: v=3
+   same N!A1      oracle: v=1                                          patched: v=1                                          resaved: v=1
+   same N!A2      oracle: v=2                                          patched: v=2                                          resaved: v=2
+   same N!A3      oracle: v=3                                          patched: v=3                                          resaved: v=3
+   same N!B1      oracle: <f>SUM(A1:A3)*100 v=600                      patched: <f>SUM(A1:A3)*100                            resaved: <f>SUM(A1:A3)*100 v=600
+   same N!B2      oracle: <f>_xlfn.LET(_xlpm.x,A1*10,_xlpm.x+1) v=11   patched: <f>_xlfn.LET(_xlpm.x,A1*10,_xlpm.x+1)        resaved: <f>_xlfn.LET(_xlpm.x,A1*10,_xlpm.x+1) v=11
+   same N!B3      oracle: (absent)                                     patched: (empty element)                              resaved: (absent)
+   DIFF N!B4      oracle: cm=1 <f t=array ref=B4>SUM(A1:A3*2) v=12     patched: <f>SUM(A1:A3*2)                              resaved: t=e <f>SUM(A1:A3*2) v=#VALUE!
+   same N!B5      oracle: cm=1 <f t=array ref=B5>SUM(A1:A3*2) v=12     patched: cm=1 <f t=array ref=B5>SUM(A1:A3*2)          resaved: cm=1 <f t=array ref=B5>SUM(A1:A3*2) v=12
+   DIFF N!B6      oracle: <f>1+2 v=3                                   patched: cm=1 <f t=array ref=B6>1+2                   resaved: cm=1 <f t=array ref=B6>1+2 v=3
+   DIFF N!B7      oracle: cm=1 <f t=array ref=B7>_xlfn.LAMBDA(_xlpm.x,_xlpm.x*2)(A3) v=6 patched: <f>_xlfn.LAMBDA(_xlpm.x,_xlpm.x*2)(A3)       resaved: <f>_xlfn.LAMBDA(_xlpm.x,_xlpm.x*2)(A3) v=6
+   same N!C1      oracle: <f>A1+100 v=101                              patched: <f>A1+100                                    resaved: <f>A1+100 v=101
+   same N!C2      oracle: t=str <f>UPPER("ab")&A1 v=AB1                patched: <f>UPPER("ab")&A1                            resaved: t=str <f>UPPER("ab")&A1 v=AB1
+   same N!C3      oracle: <f>_xlfn.XLOOKUP(2,A1:A3,A1:A3)*7 v=14       patched: <f>_xlfn.XLOOKUP(2,A1:A3,A1:A3)*7            resaved: <f>_xlfn.XLOOKUP(2,A1:A3,A1:A3)*7 v=14
+   same N!C4      oracle: cm=1 <f t=array ref=C4:C6>A1:A3*3 v=3        patched: cm=1 <f t=array ref=C4>A1:A3*3               resaved: cm=1 <f t=array ref=C4:C6>A1:A3*3 v=3
+   same N!C5      oracle: v=6                                          patched: (absent)                                     resaved: v=6
+   same N!C6      oracle: v=9                                          patched: (absent)                                     resaved: v=9
+   same Sh!B1     oracle: <f t=shared ref=B1:B5 si=0>A1*2 v=2          patched: <f t=shared ref=B1:B5 si=0>A1*2 v=2          resaved: <f t=shared ref=B1:B5 si=0>A1*2 v=2
+   same Sh!B2     oracle: <f t=shared si=0> v=4                        patched: <f t=shared si=0> v=4                        resaved: <f t=shared si=0> v=4
+   same Sh!B3     oracle: <f>A3*100 v=300                              patched: <f>A3*100                                    resaved: <f>A3*100 v=300
+   same Sh!B4     oracle: <f t=shared si=0> v=8                        patched: <f t=shared si=0> v=8                        resaved: <f t=shared si=0> v=8
+   same Sh!B5     oracle: <f t=shared si=0> v=10                       patched: <f t=shared si=0> v=10                       resaved: <f t=shared si=0> v=10
+   same Sh!C1     oracle: <f>A1+1000 v=1001                            patched: <f>A1+1000                                   resaved: <f>A1+1000 v=1001
+   DIFF Sh!C2     oracle: <f t=shared ref=C1:C5 si=2>A2+1 v=3          patched: <f t=shared ref=C2:C5 si=1>A2+1 v=3          resaved: <f t=shared ref=C2:C5 si=2>A2+1 v=3
+   same Sh!C3     oracle: <f t=shared si=2> v=4                        patched: <f t=shared si=1> v=4                        resaved: <f t=shared si=2> v=4
+   same Sh!C4     oracle: <f t=shared si=2> v=5                        patched: <f t=shared si=1> v=5                        resaved: <f t=shared si=2> v=5
+   same Sh!C5     oracle: <f t=shared si=2> v=6                        patched: <f t=shared si=1> v=6                        resaved: <f t=shared si=2> v=6
+   same Sh!D1     oracle: <f>A1+2000 v=2001                            patched: <f>A1+2000                                   resaved: <f>A1+2000 v=2001
+   DIFF Sh!D2     oracle: <f t=shared ref=D1:D5 si=3>A2*3 v=6          patched: <f>A2*3 v=6                                  resaved: <f>A2*3 v=6
+   DIFF Sh!D3     oracle: <f t=shared si=3> v=9                        patched: <f>A3*3 v=9                                  resaved: <f>A3*3 v=9
+   DIFF Sh!D4     oracle: <f t=shared si=3> v=12                       patched: <f>A4*3 v=12                                 resaved: <f>A4*3 v=12
+   DIFF Sh!D5     oracle: <f t=shared si=3> v=15                       patched: <f>A5*3 v=15                                 resaved: <f>A5*3 v=15
+   DIFF Sh!E1     oracle: <f t=shared ref=E1:E5 si=1>A1*4 v=4          patched: <f t=shared ref=E1:E4 si=3>A1*4 v=4          resaved: <f t=shared ref=E1:E4 si=1>A1*4 v=4
+   same Sh!E2     oracle: <f t=shared si=1> v=8                        patched: <f t=shared si=3> v=8                        resaved: <f t=shared si=1> v=8
+   same Sh!E3     oracle: <f t=shared si=1> v=12                       patched: <f t=shared si=3> v=12                       resaved: <f t=shared si=1> v=12
+   same Sh!E4     oracle: <f t=shared si=1> v=16                       patched: <f t=shared si=3> v=16                       resaved: <f t=shared si=1> v=16
+   same Sh!E5     oracle: <f>A5*400 v=2000                             patched: <f>A5*400                                    resaved: <f>A5*400 v=2000
+   same Slot!B1   oracle: cm=1 <f t=array ref=B1:D1>_xlfn.SEQUENCE(1,3)*10 v=10 patched: cm=1 <f t=array ref=B1>_xlfn.SEQUENCE(1,3)*10 resaved: cm=1 <f t=array ref=B1:D1>_xlfn.SEQUENCE(1,3)*10 v=10
+   same Slot!B2   oracle: <f>SUM(_xlfn.ANCHORARRAY(B1))/2 v=30         patched: <f>SUM(_xlfn.ANCHORARRAY(B1))/2              resaved: <f>SUM(_xlfn.ANCHORARRAY(B1))/2 v=30
+   same Slot!B6   oracle: <f>Costs*0.25 v=7.5                          patched: <f>Costs*0.25                                resaved: <f>Costs*0.25 v=7.5
+   same Slot!B9   oracle: <f>Tax+1 v=8.5                               patched: <f>Tax+1                                     resaved: <f>Tax+1 v=8.5
+   same Slot!C1   oracle: v=20                                         patched: (absent)                                     resaved: v=20
+   same Slot!D1   oracle: v=30                                         patched: (absent)                                     resaved: v=30
+   same Slot!F1   oracle: <f>SUM(Revenue) v=60                         patched: <f>SUM(Revenue)                              resaved: <f>SUM(Revenue) v=60
+   _calcChain:
+      oracle  E5:4 D1:4 C1:4 B3:4 F1:3 B9:3 B6:3 B2:3 B1:3 P6:2 N6:2 L6:2 E7:2 J6:2 E6:2 H6:2 E5:2 F6:2 C6:2 C4:1 C3:1 C2:1 C1:1 B7:1 B6:1 B5:1 B4:1 B2:1 B1:1 E1:4 E2:4 E3:4 E4:4 D2:4 D3:4 D4:4 D5:4 C2:4 C3:4 C4:4 C5:4 B1:4 B2:4 B4:4 B5:4 E3:2 E2:2 E4:2 E1:2
+      patched None
+      resaved B1:3 P6:2 N6:2 L6:2 J6:2 E6:2 H6:2 E5:2 F6:2 C6:2 B7:1 B6:1 B5:1 C4:1 B4:1 C3:1 C2:1 B2:1 C1:1 B1:1 E5:4 D5:4 C5:4 B5:4 E4:4 D4:4 C4:4 B4:4 E3:4 D3:4 C3:4 B3:4 E2:4 D2:4 C2:4 B2:4 E1:4 D1:4 C1:4 B1:4 E7:2 B2:3 B6:3 B9:3 F1:3 E2:2 E3:2 E1:2 E4:2
+   _calcPr:
+      oracle  <calcPr calcId="191029"/>
+      patched <calcPr calcId="181029" fullCalcOnLoad="1"/>
+      resaved <calcPr calcId="191029"/>
+   _cellMetadata:
+      oracle  <cellMetadata count="1"><bk><rc t="1" v="0"/></bk></cellMetadata>
+      patched <cellMetadata count="1"><bk><rc t="1" v="0"/></bk></cellMetadata>
+      resaved <cellMetadata count="1"><bk><rc t="1" v="0"/></bk></cellMetadata>
+   _dimension D:
+      oracle  C1:P10
+      patched C1:P9
+      resaved C1:P10
+   _dimension N:
+      oracle  A1:C7
+      patched A1:C7
+      resaved A1:C7
+   _dimension Sh:
+      oracle  A1:E5
+      patched A1:E5
+      resaved A1:E5
+   _dimension Slot:
+      oracle  A1:F9
+      patched A1:A6
+      resaved A1:F9
+   _names:
+      oracle  {'Costs': 'Slot!$B$2', 'Far': 'Slot!$B$9', 'Revenue': '_xlfn.ANCHORARRAY(Slot!$B$1)', 'Spill': '_xlfn.ANCHORARRAY(D!$C$6)', 'Spill2': '_xlfn.ANCHORARRAY(D!$F$6)', 'Tax': 'Slot!$B$6'}
+      patched {'Costs': 'Slot!$B$2', 'Far': 'Slot!$B$9', 'Revenue': '_xlfn.ANCHORARRAY(Slot!$B$1)', 'Spill': '_xlfn.ANCHORARRAY(D!$C$6)', 'Spill2': '_xlfn.ANCHORARRAY(D!$F$6)', 'Tax': 'Slot!$B$6'}
+      resaved {'Costs': 'Slot!$B$2', 'Far': 'Slot!$B$9', 'Revenue': '_xlfn.ANCHORARRAY(Slot!$B$1)', 'Spill': '_xlfn.ANCHORARRAY(D!$C$6)', 'Spill2': '_xlfn.ANCHORARRAY(D!$F$6)', 'Tax': 'Slot!$B$6'}
+   _parts:
+      oracle  ['xl/calcChain.xml', 'xl/metadata.xml', 'xl/sharedStrings.xml', 'xl/styles.xml', 'xl/workbook.xml']
+      patched ['xl/metadata.xml', 'xl/sharedStrings.xml', 'xl/styles.xml', 'xl/workbook.xml']
+      resaved ['xl/calcChain.xml', 'xl/metadata.xml', 'xl/sharedStrings.xml', 'xl/styles.xml', 'xl/workbook.xml']
+   p3 re-saved: parts ['xl/calcChain.xml', 'xl/metadata.xml', 'xl/sharedStrings.xml', 'xl/styles.xml', 'xl/workbook.xml']; calcPr <calcPr calcId="191029"/>; calcChain B1:3 P6:2 N6:2 L6:2 J6:2 E6:2 H6:2 E5:2 F6:2 C6:2 B7:1 B6:1 B5:1 C4:1 B4:1 C3:1 C2:1 B2:1 C1:1 B1:1 E5:4 D5:4 C5:4 B5:4 E4:4 D4:4 C4:4 B4:4 E3:4 D3:4 C3:4 B3:4 E2:4 D2:4 C2:4 B2:4 E1:4 D1:4 C1:4 B1:4 E7:2 B2:3 B6:3 B9:3 F1:3 E3:2 E2:2 E1:2 E4:2
+   p4 re-saved: parts ['xl/calcChain.xml', 'xl/metadata.xml', 'xl/sharedStrings.xml', 'xl/styles.xml', 'xl/workbook.xml']; calcPr <calcPr calcId="191029"/>; calcChain B1:3 P6:2 N6:2 L6:2 J6:2 E6:2 H6:2 E5:2 F6:2 C6:2 B7:1 B6:1 B5:1 C4:1 B4:1 C3:1 C2:1 B2:1 C1:1 B1:1 E5:4 D5:4 C5:4 B5:4 E4:4 D4:4 C4:4 B4:4 E3:4 D3:4 C3:4 B3:4 E2:4 D2:4 C2:4 B2:4 E1:4 D1:4 C1:4 B1:4 E7:2 B2:3 B6:3 B9:3 F1:3 E2:2 E3:2 E4:2 E1:2
+   p5 re-saved: parts ['xl/calcChain.xml', 'xl/metadata.xml', 'xl/sharedStrings.xml', 'xl/styles.xml', 'xl/workbook.xml']; calcPr <calcPr calcId="191029"/>; calcChain B1:3 P6:2 N6:2 L6:2 J6:2 E6:2 H6:2 E5:2 F6:2 C6:2 B7:1 B6:1 B5:1 C4:1 B4:1 C3:1 C2:1 B2:1 C1:1 B1:1 E5:4 D5:4 C5:4 B5:4 E4:4 D4:4 C4:4 B4:4 E3:4 D3:4 C3:4 B3:4 E2:4 D2:4 C2:4 B2:4 E1:4 D1:4 C1:4 B1:4 E7:2 F1:3 B2:3 B6:3 B9:3 E2:2 E3:2 E1:2 E4:2
+   p6 re-saved: parts ['xl/calcChain.xml', 'xl/metadata.xml', 'xl/sharedStrings.xml', 'xl/styles.xml', 'xl/workbook.xml']; calcPr <calcPr calcId="191029"/>; calcChain B1:3 E7:2 P6:2 N6:2 L6:2 J6:2 H6:2 F6:2 E6:2 C6:2 E5:2 E4:2 E3:2 E2:2 E1:2 B7:1 B6:1 B5:1 C4:1 B4:1 C3:1 C2:1 B2:1 C1:1 B1:1 E5:4 D5:4 C5:4 B5:4 E4:4 D4:4 C4:4 B4:4 E3:4 D3:4 C3:4 B3:4 E2:4 D2:4 C2:4 B2:4 E1:4 D1:4 C1:4 B1:4 B2:3 B6:3 B9:3 F1:3
+   p7 re-saved: parts ['xl/calcChain.xml', 'xl/metadata.xml', 'xl/sharedStrings.xml', 'xl/styles.xml', 'xl/workbook.xml']; calcPr <calcPr calcId="191029"/>; calcChain B1:3 E7:2 P6:2 N6:2 L6:2 J6:2 H6:2 F6:2 E6:2 C6:2 E5:2 E4:2 E3:2 E2:2 E1:2 B7:1 B6:1 B5:1 C4:1 B4:1 C3:1 C2:1 B2:1 C1:1 B1:1 E5:4 D5:4 C5:4 B5:4 E4:4 D4:4 C4:4 B4:4 E3:4 D3:4 C3:4 B3:4 E2:4 D2:4 C2:4 B2:4 E1:4 D1:4 C1:4 B1:4 F1:3 B2:3 B6:3 B9:3
+   q1 re-saved: parts ['xl/calcChain.xml', 'xl/metadata.xml', 'xl/styles.xml', 'xl/workbook.xml']; calcPr <calcPr calcId="191029"/>; calcChain B1:1 C1:1
+   q2 re-saved: parts ['xl/calcChain.xml', 'xl/styles.xml', 'xl/workbook.xml']; calcPr <calcPr calcId="191029"/>; calcChain B1:1 B1:1 C1:1
+   plain oracle stored: _parts=['xl/calcChain.xml', 'xl/metadata.xml', 'xl/styles.xml', 'xl/workbook.xml']; _calcPr=<calcPr calcId="191029"/>; _names={'Out': 'P!$B$1'}; _cellMetadata=<cellMetadata count="1"><bk><rc t="1" v="0"/></bk></cellMetadata>; _calcChain=C1:1 B1:1; _dimension P=A1:C3; P!A1=v=1; P!B1=cm=1 <f t=array ref=B1:B3>_xlfn.SEQUENCE(3)*A1 v=1; P!C1=<f>SUM(_xlfn.ANCHORARRAY(B1)) v=6; P!A2=v=2; P!B2=v=2; P!A3=v=3; P!B3=v=3
+   q1 re-saved stored: _parts=['xl/calcChain.xml', 'xl/metadata.xml', 'xl/styles.xml', 'xl/workbook.xml']; _calcPr=<calcPr calcId="191029"/>; _names={'Out': 'P!$B$1'}; _cellMetadata=<cellMetadata count="1"><bk><rc t="1" v="0"/></bk></cellMetadata>; _calcChain=B1:1 C1:1; _dimension P=A1:C3; P!A1=v=1; P!B1=cm=1 <f t=array ref=B1:B3>_xlfn.SEQUENCE(3)*A1 v=1; P!C1=<f>SUM(_xlfn.ANCHORARRAY(B1)) v=6; P!A2=v=2; P!B2=v=2; P!A3=v=3; P!B3=v=3
+   q2 re-saved stored: _parts=['xl/calcChain.xml', 'xl/styles.xml', 'xl/workbook.xml']; _calcPr=<calcPr calcId="191029"/>; _names={'Out': 'P!$B$1'}; _calcChain=B1:1 B1:1 C1:1; _dimension P=A1:C3; P!A1=v=1; P!B1=<f t=array ref=B1>_xlfn.SEQUENCE(3)*A1 v=1; P!C1=<f>SUM(_xlfn.ANCHORARRAY(B1)) v=1; P!A2=v=2; P!A3=v=3

@@ -1,0 +1,132 @@
+{
+  "file": "m3b_apply.xlsx",
+  "title": "M3b: a change set through xln apply (shared child and master, value and text cells to formulas, slot, spill <-> scalar, clear)",
+  "from": "probes/results/f8_base.xlsx: xln apply m3b_apply.changes.json",
+  "repair": false,
+  "sheets": 4,
+  "customXml": false,
+  "cells": [
+    {
+      "sheet": "Sh",
+      "cell": "C2",
+      "formula": "=A2+1",
+      "value": 3
+    },
+    {
+      "sheet": "Sh",
+      "cell": "C3",
+      "formula": "=A3*100",
+      "value": 300
+    },
+    {
+      "sheet": "Sh",
+      "cell": "C4",
+      "formula": "=A4+1",
+      "value": 5
+    },
+    {
+      "sheet": "Sh",
+      "cell": "D1",
+      "formula": "=A1*30",
+      "value": 30
+    },
+    {
+      "sheet": "Sh",
+      "cell": "D2",
+      "formula": "=A2*3",
+      "value": 6
+    },
+    {
+      "sheet": "Sh",
+      "cell": "D5",
+      "formula": "=A5*3",
+      "value": 15
+    },
+    {
+      "sheet": "N",
+      "cell": "C1",
+      "formula": "=SUM(A1:A3)*2",
+      "value": 12
+    },
+    {
+      "sheet": "N",
+      "cell": "C2",
+      "formula": "=\"hi \"&A1",
+      "value": "hi 1"
+    },
+    {
+      "sheet": "N",
+      "cell": "C4",
+      "formula": "=SEQUENCE(2,2)",
+      "value": 1
+    },
+    {
+      "sheet": "N",
+      "cell": "D5",
+      "formula": "",
+      "value": 4
+    },
+    {
+      "sheet": "Slot",
+      "cell": "B6",
+      "formula": "=7",
+      "value": 7
+    },
+    {
+      "sheet": "D",
+      "cell": "H6",
+      "formula": "=42",
+      "value": 42
+    },
+    {
+      "sheet": "D",
+      "cell": "H7",
+      "formula": "",
+      "value": null
+    },
+    {
+      "sheet": "D",
+      "cell": "E5",
+      "formula": "=SUM(H6#)",
+      "value": 42
+    },
+    {
+      "sheet": "D",
+      "cell": "P6",
+      "formula": "=SEQUENCE(3)",
+      "value": 1
+    },
+    {
+      "sheet": "D",
+      "cell": "P8",
+      "formula": "",
+      "value": 3
+    },
+    {
+      "sheet": "D",
+      "cell": "E6",
+      "formula": "",
+      "value": null
+    }
+  ],
+  "names": [
+    {
+      "name": "Tax",
+      "refersTo": "=Slot!$B$6",
+      "visible": true
+    }
+  ],
+  "evaluate": [],
+  "verify": {
+    "before": "m3b_apply.xlsx",
+    "mayChange": [
+      "Sh!C3",
+      "Sh!D1",
+      "N!C1:D5",
+      "Slot!B6",
+      "D!H6:H8",
+      "D!E5:E6",
+      "D!P6:P8"
+    ]
+  }
+}

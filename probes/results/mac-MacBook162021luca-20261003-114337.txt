@@ -1,0 +1,58 @@
+# excel-dim P0 probe — macOS
+# 2026-10-03T09:43:37Z  macOS 26.6.2  Excel 16.115
+# locale: it_IT
+
+## AppleScript tests
+T00 | INFO | Excel version 16.115
+T01 | PASS | created P_K; references==10
+T02 | PASS | =P_Add1(41) -> 42,0
+T03 | INFO | references==LAMBDA(x, x+1)
+T03 | INFO | reference local==LAMBDA(x, x+1)
+T04 | FAIL | comment: Microsoft Excel ha trovato un errore: Non posso impostare comment of named item "P_Add1" of workbook "Book1" a "probe comment".
+T05a | FAIL | Microsoft Excel ha trovato un errore: Errore nei parametri.
+T05b | INFO | make at wb with 'S2!' prefix: ok
+T05c | FAIL | The object you are trying to access does not exist
+T06 | INFO | references=='S1'!$B$1#  COLUMNS->5,0
+T08 | INFO | after update S1!A4=20,0 (expect 20)
+T09 | INFO | renamed; S1!A4 formula now =P_K2
+T10 | INFO | deleted; S1!A4 shows #NAME?
+T11 | INFO | rejected with: Microsoft Excel ha trovato un errore: Errore nei parametri.
+T12 | INFO | =Fact(5) -> 120,0 (1 = name wins, 120 = built-in wins); formula reads =FACT(5)
+T13 | INFO | =Mod.Fn(2) -> 20,0
+T14 | INFO | newline KEPT; =P_Multi(4) -> 8,0
+T15 | INFO | 7992 chars accepted; ->3990,0
+T15 | INFO | 8192 chars rejected: Microsoft Excel ha trovato un errore: Errore nei parametri.
+T15 | INFO | 9012 chars rejected: Microsoft Excel ha trovato un errore: Errore nei parametri.
+T16 | INFO | evaluate P_Add1(1) -> 2,0
+T16 | INFO | evaluate ROWS*10+COLUMNS of P_Spill -> 15,0
+T17 | INFO | =Growλ(100,0.1) -> 110,0
+T18 | INFO | reference local with ';' rejected: Microsoft Excel ha trovato un errore: Errore nei parametri.
+T07 | INFO | 15 named items in workbook collection
+T07 | ITEM | _xlfn.ANCHORARRAY | visible=false | =#NAME?
+T07 | ITEM | _xlfn.LAMBDA | visible=false | =#NAME?
+T07 | ITEM | _xlfn.SEQUENCE | visible=false | =#NAME?
+T07 | ITEM | _xlpm.b | visible=false | =#NAME?
+T07 | ITEM | _xlpm.g | visible=false | =#NAME?
+T07 | ITEM | _xlpm.n | visible=false | =#NAME?
+T07 | ITEM | _xlpm.x | visible=false | =#NAME?
+T07 | ITEM | Fact | visible=true | =LAMBDA(n, 1)
+T07 | ITEM | Growλ | visible=true | =LAMBDA(b,g, b*(1+g))
+T07 | ITEM | Mod.Fn | visible=true | =LAMBDA(x, x*10)
+T07 | ITEM | P_Add1 | visible=true | =LAMBDA(x, x+1)
+T07 | ITEM | 'S2'!P_Local2 | visible=true | =6
+T07 | ITEM | P_Long3990 | visible=true | =LAMBDA(x,x+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+…
+T07 | ITEM | P_Multi | visible=true | =LAMBDA(x,
+  x*2)
+T07 | ITEM | P_Spill | visible=true | ='S1'!$B$1#
+T19 | PASS | saved /Users/luca/Library/Group Containers/UBF8T346G9.Office/excel-dim-probe/probe_mac.xlsx
+
+
+## Stored form: <definedNames> in xl/workbook.xml of the saved copy
+name="Fact" => _xlfn.LAMBDA(_xlpm.n, 1)
+name="Growλ" => _xlfn.LAMBDA(_xlpm.b,_xlpm.g, _xlpm.b*(1+_xlpm.g))
+name="Mod.Fn" => _xlfn.LAMBDA(_xlpm.x, _xlpm.x*10)
+name="P_Add1" => _xlfn.LAMBDA(_xlpm.x, _xlpm.x+1)
+name="P_Local2" localSheetId="1" => 6
+name="P_Long3990" => _xlfn.LAMBDA(_xlpm.x,_xlpm.x+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1
+name="P_Multi" => _xlfn.LAMBDA(_xlpm.x,\n  _xlpm.x*2)
+name="P_Spill" => _xlfn.ANCHORARRAY('S1'!$B$1)

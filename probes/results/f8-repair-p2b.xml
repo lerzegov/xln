@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<recoveryLog xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><logFileName>Repair Result to f8_p2b0.xml</logFileName><summary>Errors were detected in file '/Users/luca/Library/Group Containers/UBF8T346G9.Office/excel-dim-probe/f8_p2b.xlsx'</summary><removedRecords summary="Following is a list of removed records:"><removedRecord>Removed Records: Formula from /xl/calcChain.xml part (Calculation properties)</removedRecord></removedRecords></recoveryLog>

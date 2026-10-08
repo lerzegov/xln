@@ -1,0 +1,80 @@
+// module: Fin          names are written in full: Fin.NPVrow
+// This file exercises every construct the grammar colours. It is not a real model.
+
+// #region Axes
+
+/** Period axis: one row of year labels. */
+Timeline = LAMBDA(start, periods, SEQUENCE(1, periods, start, 1));
+
+@sheet(Model)                          // per name: this one is local to Model
+Periods = Model!$B$3;
+
+@sheet('Cash Flow')                    // quoted: the sheet name has a space
+@hidden                                // per name: this one only
+Revenue = 'Cash Flow'!$C$10#;
+
+Assumptions.Growth = Assumptions[Growth];
+
+Grid = Model!$C$10:$G$20;
+
+// #endregion
+
+/*
+   Block comment: layout, like // comments. A pull rewrites the file from the workbook,
+   so only doc comments (the Name Manager's) come back.
+*/
+
+/** Stored forms: prefixes as Excel writes them in the file. */
+Stored = _xlfn.LET(_xlpm.x, 1, _xlfn._xlws.FILTER(Data!A:A, Data!A:A > _xlpm.x));
+
+/** Display forms, spanning lines; the definition ends at the semicolon. */
+@from(lib #3f9a1c)                     // the library version this copy came from
+Fin.NPVrow = LAMBDA(rate, flows,
+    LET(
+        n, COLUMNS(flows),
+        disc, (1 + rate) ^ -SEQUENCE(1, n),
+        SUM(flows * disc)          // LET's last argument is its value
+    )
+);
+
+Literals = IF(TRUE, "text with ""quotes"" and ; inside", FALSE);
+Numbers = 1 + 2.5 - .75 * 1E3 / 4e-2 + 50%;
+Arrays = {1, 2, 3; 4, 5, 6};
+Errors = IFERROR(1 / 0, #DIV/0!) & #N/A & #REF! & #NAME? & #SPILL!;
+Compare = (A1 <> B1) * (C1 >= 2) + (D1 <= 3) * (E1 = 4);
+
+Refs = SUM(Sheet1!A1:B2, $A:$C, 1:3, Sheet1:Sheet3!A1, [1]Ext!$A$1);
+Trim = SUM(Data!A1:.B100) + SUM(Data!A1.:B100) + SUM(Data!A1.:.B100);
+Spill = Model!$C$10# + Revenue# + INDEX(Fin.Timeline(2024, 5)#, 1);
+
+Tables = SUM(Sales[Amount]) + ROWS(Sales[[#Headers],[Region]:[Amount]])
+    + COUNTA(Sales[#All]) + SUM(Sales[[#This Row],[Q1 ''24]]);
+ThisRow = [@Amount] * @Model!$B$3;
+
+Concat = "Year " & TEXT(Model!$B$3, "0") & " of " & Periods;
+Union = SUM((A1:A3, C1:C3));
+Intersection = SUM(A1:C3 B2:D4);
+Immediate = LAMBDA(x, x + 1)(41);
+Unicode = Ricavi_netti + Crescità * Δ;
+
+// Cell statements (in a sheet file the address is bare: @C4): addresses are set in Excel
+// and read-only, but for the `#` of a named one: `Name @C4#` names the spill, `Name @C6`
+// the cell alone. Outside a sheet file the address names its sheet.
+@sheet(BS)
+Revenue @C4# = SEQUENCE(1, 5, 20000, 3400);
+@BS!C5 = Model!Years;
+/** Receivables. */
+@sheet(BS)
+Receivables @C6 = Sales * 0.2;
+@sheet(BS)
+Slot @C7 = ;
+@BS!B40:G40 = SUM(B30:B39);
+
+@workbook                              // in a sheet file: this name is workbook-scoped
+Created @'Cash Flow'!$D$9 = 1;
+Spilled @'Cash Flow'!D10# = SEQUENCE(3);
+
+// Files written before 2026-10-07 have blocks, still read: @scope(Sheet) makes the names
+// after it local to Sheet, until the next @scope(…) or @workbook.
+@scope(Model)
+Old = 1;

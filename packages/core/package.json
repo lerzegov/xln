@@ -1,0 +1,46 @@
+{
+  "name": "@xln/core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "The pure library behind xln: read and write Excel defined names, LAMBDAs and cell formulas in .xlsx files, the .xln language, the dependency graph and the audit. Runs in Node and in the browser.",
+  "license": "MIT",
+  "author": {
+    "name": "Luca Erzegovesi"
+  },
+  "homepage": "https://github.com/lerzegov/xln/tree/HEAD/packages/core#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lerzegov/xln.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/lerzegov/xln/issues"
+  },
+  "keywords": [
+    "excel",
+    "xlsx",
+    "defined-names",
+    "lambda",
+    "formula",
+    "parser",
+    "audit"
+  ],
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "README.md",
+    "LICENSE"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "fflate": "^0.8.3"
+  }
+}

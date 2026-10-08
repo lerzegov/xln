@@ -1,0 +1,118 @@
+{
+  "file": "m3a_names.xlsx",
+  "title": "M3a: names written by xln build (multi-line LET with a two-line comment, hidden, update, rename, delete, rescope)",
+  "from": "probes/results/f7_base.xlsx: pull; build 1 (Rate 0.1 -> 0.2, new Grow, Secret, TmpA-C); build 2 (@renamed(TmpA) RenamedA, TmpB deleted, TmpC moved into names/sheets/S2.xln: local to S2)",
+  "repair": false,
+  "sheets": 2,
+  "customXml": true,
+  "project": "m3a_names.xln",
+  "cells": [
+    {
+      "sheet": "S1",
+      "cell": "A1",
+      "formula": "=Rate*2",
+      "value": 0.4
+    },
+    {
+      "sheet": "S1",
+      "cell": "C1",
+      "formula": "=RateX+Rate",
+      "value": 0.7
+    },
+    {
+      "sheet": "S1",
+      "cell": "E1",
+      "formula": "=SEQUENCE(3)*Rate",
+      "value": 0.2
+    },
+    {
+      "sheet": "S1",
+      "cell": "E3",
+      "formula": "",
+      "value": 0.6000000000000001
+    },
+    {
+      "sheet": "S1",
+      "cell": "C4",
+      "formula": "=Fn(10)",
+      "value": 2
+    },
+    {
+      "sheet": "S1",
+      "cell": "C10",
+      "formula": "=Rate2+Fn(1)",
+      "value": 0.6000000000000001
+    },
+    {
+      "sheet": "S2",
+      "cell": "A2",
+      "formula": "=Rate+Loc",
+      "value": 7.2
+    }
+  ],
+  "names": [
+    {
+      "name": "Grow",
+      "refersTo": "=LAMBDA(g,n,LET(f,1+g,f^n))",
+      "comment": "Growth factor over n years.\nSecond line of the comment.",
+      "visible": true
+    },
+    {
+      "name": "Secret",
+      "refersTo": "=42",
+      "visible": false
+    },
+    {
+      "name": "Rate",
+      "refersTo": "=0.2",
+      "visible": true
+    },
+    {
+      "name": "RenamedA",
+      "refersTo": "=11",
+      "visible": true
+    },
+    {
+      "name": "S2!TmpC",
+      "refersTo": "=33",
+      "visible": true
+    },
+    {
+      "name": "TmpA",
+      "absent": true
+    },
+    {
+      "name": "TmpB",
+      "absent": true
+    },
+    {
+      "name": "TmpC",
+      "absent": true
+    }
+  ],
+  "evaluate": [
+    {
+      "expr": "Grow(0.1,2)",
+      "value": 1.2100000000000002
+    },
+    {
+      "expr": "Secret",
+      "value": 42
+    },
+    {
+      "expr": "RenamedA",
+      "value": 11
+    },
+    {
+      "expr": "S2!TmpC",
+      "value": 33
+    }
+  ],
+  "verify": {
+    "before": "m3a_names.xlsx",
+    "mayChange": [
+      "S1!A1:E11",
+      "S2!A1:B5"
+    ]
+  }
+}

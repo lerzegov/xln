@@ -1,0 +1,10 @@
+// Sheet Sh, pulled by xln from m3b_build.xlsx: its formula cells in sheet order, then
+// the names local to it that no module owns. Every name here is local to Sh unless
+// the line above it says @workbook. A cell's address (@C6) is set in Excel and read-only;
+// edit the formula after '='. `Name @C6 = ;` is a slot: a name on an empty cell.
+// `Name @C6#` names the cell's spill, `Name @C6` the cell alone: add or remove the `#`.
+
+@B1:B5 = A1*2;
+@C1:C5 = A1+10;
+@D1:D5 = A1*3;
+@E1:E5 = A1*4;

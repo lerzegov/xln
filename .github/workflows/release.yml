@@ -1,0 +1,89 @@
+# Release: on a version tag (`v0.1.2`), build and test, package the extension once, attach
+# the .vsix to a GitHub Release and publish that same file to Open VSX. The VS Code
+# Marketplace is uploaded by hand from the Release's .vsix (the maintainer's account
+# cannot make a Marketplace token), so both registries carry the same bytes.
+#
+# Run by hand (Actions → Release → Run workflow) it does everything but publish: a check
+# that the pipeline still works.
+#
+# Needs the repository secret OVSX_PAT (an Open VSX access token of the namespace owner).
+name: Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    # Only the public repository publishes; the private one carries the same file.
+    if: github.repository == 'lerzegov/xln'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run build
+      - run: npm test
+
+      - name: Version
+        id: version
+        run: |
+          v=$(node -p "require('./packages/vscode/package.json').version")
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+          if [ "${GITHUB_REF_TYPE}" = "tag" ] && [ "${GITHUB_REF_NAME}" != "v$v" ]; then
+            echo "::error::tag ${GITHUB_REF_NAME} but packages/vscode/package.json says $v"
+            exit 1
+          fi
+
+      - name: Package
+        run: npm run package -w xln
+
+      - name: Release notes from the changelog
+        run: |
+          awk -v v="${{ steps.version.outputs.version }}" '
+            index($0, "## " v " ") == 1 { on = 1; next }
+            on && /^## / { exit }
+            on { print }
+          ' packages/vscode/CHANGELOG.md > notes.md
+          cat notes.md
+
+      - name: Keep the .vsix of a manual run
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: xln-${{ steps.version.outputs.version }}-check
+          path: packages/vscode/xln-${{ steps.version.outputs.version }}.vsix
+
+      - name: GitHub Release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        # A Release made by hand for this tag (or a re-run) is kept as it is.
+        run: |
+          if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
+            echo "Release ${GITHUB_REF_NAME} exists: left as it is"; exit 0
+          fi
+          gh release create "${GITHUB_REF_NAME}" \
+            "packages/vscode/xln-${{ steps.version.outputs.version }}.vsix" \
+            --title "xln ${{ steps.version.outputs.version }}" --notes-file notes.md
+
+      - name: Open VSX
+        if: github.event_name == 'push'
+        env:
+          OVSX_PAT: ${{ secrets.OVSX_PAT }}
+        # Open VSX refuses a version twice: a tag pushed again only checks it is there.
+        run: |
+          v="${{ steps.version.outputs.version }}"
+          if curl -sf "https://open-vsx.org/api/lerzegov-xln/xln/$v" >/dev/null; then
+            echo "Open VSX already has $v: not published again"; exit 0
+          fi
+          npx ovsx publish "packages/vscode/xln-$v.vsix"

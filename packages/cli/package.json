@@ -1,0 +1,46 @@
+{
+  "name": "@xln/cli",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "xln command line: pull an Excel workbook's defined names into .xln text, check and audit them, and build them back. A thin Node wrapper around @xln/core.",
+  "license": "MIT",
+  "author": {
+    "name": "Luca Erzegovesi"
+  },
+  "homepage": "https://github.com/lerzegov/xln/tree/HEAD/packages/cli#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lerzegov/xln.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/lerzegov/xln/issues"
+  },
+  "keywords": [
+    "excel",
+    "xlsx",
+    "defined-names",
+    "lambda",
+    "cli",
+    "audit"
+  ],
+  "files": [
+    "bin",
+    "dist",
+    "!dist/**/*.map",
+    "README.md",
+    "LICENSE"
+  ],
+  "bin": {
+    "xln": "bin/xln.js"
+  },
+  "main": "dist/main.js",
+  "types": "dist/main.d.ts",
+  "dependencies": {
+    "@xln/core": "*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0"
+  }
+}

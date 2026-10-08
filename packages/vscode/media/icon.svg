@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <!-- The source of icon.png: `node scripts/icon.mjs` renders it (Marketplace and Open VSX want a PNG). -->
+  <rect x="4" y="4" width="120" height="120" rx="20" fill="#1d5c46"/>
+  <g stroke="#ffffff" stroke-opacity="0.18" stroke-width="2">
+    <line x1="4" y1="40" x2="124" y2="40"/>
+    <line x1="4" y1="88" x2="124" y2="88"/>
+    <line x1="44" y1="4" x2="44" y2="40"/>
+    <line x1="84" y1="4" x2="84" y2="40"/>
+    <line x1="44" y1="88" x2="44" y2="124"/>
+    <line x1="84" y1="88" x2="84" y2="124"/>
+  </g>
+  <text x="64" y="78" text-anchor="middle" font-family="Menlo, Consolas, 'DejaVu Sans Mono', monospace"
+        font-size="44" font-weight="700" fill="#ffffff">xln</text>
+</svg>

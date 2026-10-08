@@ -1,0 +1,42 @@
+{
+  "format": "xln.lock/4",
+  "workbook": "m3b_build.xlsx",
+  "names": {
+    "Costs": { "definition": "h:d473622a3568b2d4", "comment": null, "hidden": false },
+    "Far": { "definition": "h:de3285568741d74b", "comment": null, "hidden": false },
+    "Revenue": { "definition": "h:84f88c29f260852e", "comment": null, "hidden": false },
+    "Spill": { "definition": "h:13e0c8a17092613a", "comment": null, "hidden": false },
+    "Spill2": { "definition": "h:a79db18c5238caee", "comment": null, "hidden": false },
+    "Tax": { "definition": "h:dfa7745729cc97a6", "comment": null, "hidden": false }
+  },
+  "cells": {
+    "N!B1": { "sheet": "N", "range": "B1", "formula": "h:efe79fe02dd5e2d0" },
+    "N!B2": { "sheet": "N", "range": "B2", "formula": "h:e5145939ea352c23" },
+    "N!B3": { "sheet": "N", "range": "B3", "formula": "h:0128f2af40a1da3c" },
+    "N!B4": { "sheet": "N", "range": "B4", "formula": "h:6c407b9984f410a2" },
+    "N!B5:B6": { "sheet": "N", "range": "B5:B6", "formula": "h:e2f14d46699d0a5f" },
+    "N!B7": { "sheet": "N", "range": "B7", "formula": "h:9d97255d867fe04a" },
+    "D!E1": { "sheet": "D", "range": "E1", "formula": "h:3b1c958db5918dab" },
+    "D!E2": { "sheet": "D", "range": "E2", "formula": "h:a14f64d00004921c" },
+    "D!E3": { "sheet": "D", "range": "E3", "formula": "h:a7997fb7fa78ec17" },
+    "D!E4": { "sheet": "D", "range": "E4", "formula": "h:48cd9cb1649b36e6" },
+    "D!E5": { "sheet": "D", "range": "E5", "formula": "h:7a1a0498e831c2f7" },
+    "Spill": { "sheet": "D", "range": "C6", "name": "Spill", "formula": "h:348f530ea5ef5f1b" },
+    "D!E6": { "sheet": "D", "range": "E6", "formula": "h:f041ba60ee67c155" },
+    "Spill2": { "sheet": "D", "range": "F6", "name": "Spill2", "formula": "h:8a30e7d507773a64" },
+    "D!H6": { "sheet": "D", "range": "H6", "formula": "h:54da0f6a480492f1" },
+    "D!J6": { "sheet": "D", "range": "J6", "formula": "h:ab6986547a1729ca" },
+    "D!L6": { "sheet": "D", "range": "L6", "formula": "h:ab6986547a1729ca" },
+    "D!N6": { "sheet": "D", "range": "N6", "formula": "h:54da0f6a480492f1" },
+    "D!P6": { "sheet": "D", "range": "P6", "formula": "h:84679eded215b3f4" },
+    "D!E7": { "sheet": "D", "range": "E7", "formula": null },
+    "Revenue": { "sheet": "Slot", "range": "B1", "name": "Revenue", "formula": "h:d1f77d7b28c16c25" },
+    "Costs": { "sheet": "Slot", "range": "B2", "name": "Costs", "formula": "h:4b14031c59b184ae" },
+    "Tax": { "sheet": "Slot", "range": "B6", "name": "Tax", "formula": null },
+    "Far": { "sheet": "Slot", "range": "B9", "name": "Far", "formula": "h:a87a1e89f3cae5b1" },
+    "Sh!B1:B5": { "sheet": "Sh", "range": "B1:B5", "formula": "h:a87c707a7be23eec" },
+    "Sh!C1:C5": { "sheet": "Sh", "range": "C1:C5", "formula": "h:6aaad05e80a0fff2" },
+    "Sh!D1:D5": { "sheet": "Sh", "range": "D1:D5", "formula": "h:97ee07ca89343e53" },
+    "Sh!E1:E5": { "sheet": "Sh", "range": "E1:E5", "formula": "h:7eb4142f91f0f94e" }
+  }
+}

@@ -1,0 +1,22 @@
+# Excel owner/lock files and OS noise
+~$*
+.DS_Store
+Thumbs.db
+# probe staging
+probes/results/x/
+*.zip
+node_modules/
+dist/
+*.tsbuildinfo
+.vscode-test/
+*.vsix
+.vscode-test-web/
+.certs/
+# written by the xln: Write test file probe
+xln-write-test.txt
+# Claude Code worktrees for parallel sessions
+.claude/worktrees/
+# folder last opened by npm run open
+.xln-open
+# machine-specific Claude Code notes
+CLAUDE.local.md

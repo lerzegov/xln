@@ -1,0 +1,87 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "xln formula view",
+  "scopeName": "source.xln-formulas",
+  "comment": "The read-only formula view of a sheet (xln-formulas: documents): `Name  C6#  (6×1)  = formula  → value`. In calculation order a level (`5`, `5 ↻1` in a circular reference) comes first and, in the workbook view, the cell carries its sheet (`IS!C16#`). The defined names on the cell lead the line (or stand on a line of their own above it when long), coloured like the name of a definition in .xln files. Formula tokens come from the xln grammar; the value column is matched first everywhere, also inside an open parenthesis of a formula that continues on the next lines.",
+  "patterns": [
+    { "include": "#header" },
+    { "include": "#entry" },
+    { "include": "#lhs-line" },
+    { "include": "#items" }
+  ],
+  "repository": {
+    "header": {
+      "match": "^//.*$",
+      "name": "comment.line.double-slash.xln-formulas"
+    },
+    "entry": {
+      "match": "^(?:([0-9]+(?: ↻[0-9]+)?)\\s+)?(?:((?:(?:'(?:[^']|'')*'|[\\p{L}_\\\\][\\p{L}\\p{N}_.\\\\]*)!)?[\\p{L}_\\\\][\\p{L}\\p{N}_.?\\\\]*(?:, (?:(?:'(?:[^']|'')*'|[\\p{L}_\\\\][\\p{L}\\p{N}_.\\\\]*)!)?[\\p{L}_\\\\][\\p{L}\\p{N}_.?\\\\]*)*)\\s+)?\\s*((?:'(?:[^']|'')*'|[\\p{L}_\\\\][\\p{L}\\p{N}_.\\\\]*)!)?([A-Z]{1,3}[0-9]{1,7})(#?)(\\s{2,})((?:\\([0-9]+×[0-9]+\\)|\\(spill\\)|\\{[0-9]+×[0-9]+\\}|\\{array\\}|shared ×[0-9?]+|shared ← [A-Z]{1,3}[0-9]{1,7}|table(?: [0-9]+×[0-9]+)?)?)\\s*(=)",
+      "captures": {
+        "1": { "name": "constant.numeric.level.xln-formulas" },
+        "2": { "patterns": [{ "include": "#lhs-names" }] },
+        "3": { "patterns": [{ "include": "#lhs-names" }] },
+        "4": { "name": "entity.name.tag.cell.xln-formulas" },
+        "5": { "name": "keyword.operator.spill.xln" },
+        "7": { "name": "storage.modifier.kind.xln-formulas" },
+        "8": { "name": "keyword.operator.assignment.xln-formulas" }
+      }
+    },
+    "lhs-line": {
+      "comment": "Names too long for the name column stand on a line of their own above their entry.",
+      "match": "^((?:(?:'(?:[^']|'')*'|[\\p{L}_\\\\][\\p{L}\\p{N}_.\\\\]*)!)?[\\p{L}_\\\\][\\p{L}\\p{N}_.?\\\\]*(?:, (?:(?:'(?:[^']|'')*'|[\\p{L}_\\\\][\\p{L}\\p{N}_.\\\\]*)!)?[\\p{L}_\\\\][\\p{L}\\p{N}_.?\\\\]*)*)\\s*$",
+      "captures": {
+        "1": { "patterns": [{ "include": "#lhs-names" }] }
+      }
+    },
+    "lhs-names": {
+      "comment": "The defined names on a cell (its left-hand side), coloured like the name of a definition in .xln files.",
+      "patterns": [
+        {
+          "match": "('(?:[^']|'')*'|[\\p{L}_\\\\][\\p{L}\\p{N}_.\\\\]*)(!)",
+          "captures": {
+            "1": { "name": "entity.name.namespace.sheet.xln" },
+            "2": { "name": "punctuation.separator.sheet.xln" }
+          }
+        },
+        { "match": "[\\p{L}_\\\\][\\p{L}\\p{N}_.?\\\\]*", "name": "entity.name.function.lhs.xln-formulas" },
+        { "match": ",", "name": "punctuation.separator.comma.xln-formulas" }
+      ]
+    },
+    "value": {
+      "match": "(→)\\s?(.*?)(?:\\s+(//.*))?$",
+      "captures": {
+        "1": { "name": "punctuation.separator.value.xln-formulas" },
+        "2": { "name": "constant.other.value.xln-formulas" },
+        "3": { "name": "comment.line.double-slash.xln-formulas" }
+      }
+    },
+    "items": {
+      "patterns": [
+        { "include": "#value" },
+        { "include": "#parens" },
+        { "include": "source.xln#string" },
+        { "include": "source.xln#array" },
+        { "include": "source.xln#error" },
+        { "include": "source.xln#sheet-prefix" },
+        { "include": "source.xln#reference" },
+        { "include": "source.xln#structured-reference" },
+        { "include": "source.xln#spill" },
+        { "include": "source.xln#lambda-let" },
+        { "include": "source.xln#function-call" },
+        { "include": "source.xln#parameter" },
+        { "include": "source.xln#boolean" },
+        { "include": "source.xln#number" },
+        { "include": "source.xln#name" },
+        { "include": "source.xln#operator" },
+        { "match": "//.*$", "name": "comment.line.double-slash.xln-formulas" }
+      ]
+    },
+    "parens": {
+      "begin": "\\(",
+      "end": "\\)",
+      "beginCaptures": { "0": { "name": "punctuation.parenthesis.begin.xln" } },
+      "endCaptures": { "0": { "name": "punctuation.parenthesis.end.xln" } },
+      "patterns": [{ "include": "#items" }]
+    }
+  }
+}

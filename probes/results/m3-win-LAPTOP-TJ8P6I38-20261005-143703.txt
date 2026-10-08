@@ -1,0 +1,33 @@
+﻿H00 | INFO | # xln M3 Windows check, script v1  2026-10-05 12:37:03Z
+E01 | INFO | OS Microsoft Windows NT 10.0.26200.0; PowerShell 5.1.26100.8655; culture it-IT
+E02 | PASS | LanguageMode=FullLanguage
+E03 | INFO | kit: \\192.168.1.34\probes\windows\m3kit; results: \\192.168.1.34\probes\results
+E06 | INFO | part 1 skipped (-ReopenOnly)
+R00 | INFO | script C:\Users\Lenovo\AppData\Local\xln-m3check\reopen\excel.ps1; workbook C:\Users\Lenovo\AppData\Local\xln-m3check\reopen\reopen_check.xlsx (a copy of ../../results/f8_p1_resaved.xlsx)
+R01 | PASS | state with Excel not running: 'notrunning' in 0,3 s (expected 'notrunning')
+R02 | PASS | open with Excel not running (the script starts Excel): 'opened' in 2,3 s (expected 'opened')
+R03 | PASS | Excel still running after the script ended: True
+R04 | PASS | state, open and saved: 'saved' in 0,4 s (expected 'saved')
+R05 | PASS | close: 'closed' in 0,6 s (expected 'closed')
+R06 | PASS | state after close, Excel still running: 'closed' in 0,4 s (expected 'closH00 | INFO | # xln M3 Windows check, script v1  2026-10-05 12:37:03Z
+E01 | INFO | OS Microsoft Windows NT 10.0.26200.0; PowerShell 5.1.26100.8655; culture it-IT
+E02 | PASS | LanguageMode=FullLanguage
+E03 | INFO | kit: \\192.168.1.34\probes\windows\m3kit; results: \\192.168.1.34\probes\results
+E06 | INFO | part 1 skipped (-ReopenOnly)
+R00 | INFO | script C:\Users\Lenovo\AppData\Local\xln-m3check\reopen\excel.ps1; workbook C:\Users\Lenovo\AppData\Local\xln-m3check\reopen\reopen_check.xlsx (a copy of ../../results/f8_p1_resaved.xlsx)
+R01 | PASS | state with Excel not running: 'notrunning' in 0,3 s (expected 'notrunning')
+R02 | PASS | open with Excel not running (the script starts Excel): 'opened' in 2,3 s (expected 'opened')
+R03 | PASS | Excel still running after the script ended: True
+R04 | PASS | state, open and saved: 'saved' in 0,4 s (expected 'saved')
+R05 | PASS | close: 'closed' in 0,6 s (expected 'closed')
+R06 | PASS | state after close, Excel still running: 'closed' in 0,4 s (expected 'closed')
+R07 | PASS | close when not open: 'not open' in 0,4 s (expected 'not open')
+R08 | FAIL | state of a workbook opened from Explorer: first 'closed' in 0,3 s; after clicking this window 'closed' in 0,4 s
+R09 | FAIL | state with an unsaved change: 'closed' in 0,4 s (expected 'unsaved'; xln then refuses with exit 5 unless --discard)
+R10 | FAIL | close (discarding the change, as --discard): 'not open' in 0,4 s (expected 'closed')
+R99 | FAIL | part 2 stopped: Impossibile leggere il file 'C:\Users\Lenovo\AppData\Local\xln-m3check\reopen\reopen_check.xlsx': Il processo non può accedere al file 'C:\Users\Lenovo\AppData\Local\xln-m3check\reopen\reopen_check.xl...
+S00 | INFO | summary: 8 PASS, 4 FAIL, 0 WARN
+S01 | LIST | R08 | FAIL | state of a workbook opened from Explorer: first 'closed' in 0,3 s; after clicking this window 'closed' in 0,4 s
+S01 | LIST | R09 | FAIL | state with an unsaved change: 'closed' in 0,4 s (expected 'unsaved'; xln then refuses with exit 5 unless --discard)
+S01 | LIST | R10 | FAIL | close (discarding the change, as --discard): 'not open' in 0,4 s (expected 'closed')
+S01 | LIST | R99 | FAIL | part 2 stopped: Impossibile leggere il file 'C:\Users\Lenovo\AppData\Local\xln-m3check\reopen\reopen_check.xlsx': Il processo non può accedere al file 'C:\Users\Lenovo\AppData\Local\xln-m3check\reopen\reopen_check.xl...

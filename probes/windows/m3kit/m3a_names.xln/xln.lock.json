@@ -1,0 +1,36 @@
+{
+  "format": "xln.lock/4",
+  "workbook": "m3a_names.xlsx",
+  "names": {
+    "Fn": { "definition": "h:7a606da7ae06ceb5", "comment": null, "hidden": false },
+    "Grow": { "definition": "h:b4a336243098d9bc", "comment": "h:3aa9d54974e9f7cb", "hidden": false },
+    "Loc": { "definition": "h:6845427f830f56d3", "comment": null, "hidden": false },
+    "Rate": { "definition": "h:a93efe3cf81a40aa", "comment": null, "hidden": false },
+    "Rate2": { "definition": "h:d74f26d1c01229f2", "comment": null, "hidden": false },
+    "RateX": { "definition": "h:e6595a61a999ec7b", "comment": null, "hidden": false },
+    "RenamedA": { "definition": "h:93b48da9e48fdd49", "comment": null, "hidden": false },
+    "Secret": { "definition": "h:4829944b2cc2ba1f", "comment": null, "hidden": true },
+    "Spl": { "definition": "h:65172e8f4475b332", "comment": null, "hidden": false },
+    "S2!Loc": { "definition": "h:efbc62f7e41240e8", "comment": null, "hidden": false },
+    "S2!TmpC": { "definition": "h:b5bc275776292e7a", "comment": null, "hidden": false }
+  },
+  "cells": {
+    "S1!A1": { "sheet": "S1", "range": "A1", "formula": "h:d74f26d1c01229f2" },
+    "S1!C1": { "sheet": "S1", "range": "C1", "formula": "h:39f3ed82842dcd50" },
+    "Spl": { "sheet": "S1", "range": "E1", "name": "Spl", "formula": "h:d1f92a2d94325030" },
+    "S1!B2:B11": { "sheet": "S1", "range": "B2:B11", "formula": "h:7559ba3de7a4acd3" },
+    "S1!C2": { "sheet": "S1", "range": "C2", "formula": "h:7ccb49af65683199" },
+    "S1!C3": { "sheet": "S1", "range": "C3", "formula": "h:cd26583b7d4a2300" },
+    "S1!C4": { "sheet": "S1", "range": "C4", "formula": "h:f020fbb99cb73100" },
+    "S1!C5": { "sheet": "S1", "range": "C5", "formula": "h:70bef26cb6d535c7" },
+    "S1!C6": { "sheet": "S1", "range": "C6", "formula": "h:1a0729e8900137bb" },
+    "S1!C7": { "sheet": "S1", "range": "C7", "formula": "h:595c65193f2605c3" },
+    "S1!C8": { "sheet": "S1", "range": "C8", "formula": "h:01e4ff9fe6d6d39b" },
+    "S1!C9": { "sheet": "S1", "range": "C9", "formula": "h:170b553205f2ddaf" },
+    "S1!C10": { "sheet": "S1", "range": "C10", "formula": "h:90d14ae913c8bb88" },
+    "S2!A1": { "sheet": "S2", "range": "A1", "formula": "h:28692931b7896470" },
+    "S2!B1": { "sheet": "S2", "range": "B1", "formula": "h:df3b741c5c337f20" },
+    "S2!A2": { "sheet": "S2", "range": "A2", "formula": "h:88e807388464e915" },
+    "S2!A3:A5": { "sheet": "S2", "range": "A3:A5", "formula": "h:202f82ac81023270" }
+  }
+}

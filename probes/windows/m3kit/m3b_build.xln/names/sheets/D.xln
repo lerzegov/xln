@@ -1,0 +1,22 @@
+// Sheet D, pulled by xln from m3b_build.xlsx: its formula cells in sheet order, then
+// the names local to it that no module owns. Every name here is local to D unless
+// the line above it says @workbook. A cell's address (@C6) is set in Excel and read-only;
+// edit the formula after '='. `Name @C6 = ;` is a slot: a name on an empty cell.
+// `Name @C6#` names the cell's spill, `Name @C6` the cell alone: add or remove the `#`.
+
+@E1 = SUM(Spill);
+@E2 = SUM(Spill2);
+@E3 = ROWS(F6#);
+@E4 = ROWS(C6#);
+@E5 = SUM(H6#);
+@workbook
+Spill @C6# = SEQUENCE(5);
+@E6 = SUM(J6#);
+@workbook
+Spill2 @F6# = SEQUENCE(2);
+@H6 = SEQUENCE(3);
+@J6 = SEQUENCE(4);
+@L6 = SEQUENCE(4);
+@N6 = SEQUENCE(3);
+@P6 = 3+4;
+@E7 = ;

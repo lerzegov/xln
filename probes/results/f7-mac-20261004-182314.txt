@@ -1,0 +1,118 @@
+# excel-dim F7 — rename a name inside cell formulas at file level (macOS)
+# 2026-10-04T18:23:08
+
+## 1 build: built
+## 2 oracle (Excel renames live):
+   before: _xlfn.ANCHORARRAY
+   before: _xlfn.LAMBDA
+   before: _xlfn.LET
+   before: _xlfn.SEQUENCE
+   before: _xlpm.Rate
+   before: _xlpm.x
+   before: Fn
+   before: 'S2'!Loc
+   before: Loc
+   before: Rate
+   before: Rate2
+   before: RateX
+   before: Spl
+   after: _xlfn.ANCHORARRAY
+   after: _xlfn.LAMBDA
+   after: _xlfn.LET
+   after: _xlfn.SEQUENCE
+   after: _xlpm.Rate
+   after: _xlpm.x
+   after: Fx
+   after: Growth
+   after: Loc
+   after: Rate2
+   after: RateX
+   after: Spl
+   after: 'S2'!Spot
+## 3 file patch:
+   definedName Fn (workbook) -> Fx
+   definedName Loc (S2) -> Spot
+   definedName Rate (workbook) -> Growth
+   S1 (xl/worksheets/sheet1.xml): changed
+   S2 (xl/worksheets/sheet2.xml): changed
+## 4 Excel opens the patched file: opened as: f7_patched.xlsx
+
+shared-formula cells in base: 13; calcChain present: base True, patched True, resaved True
+
+## 5a formulas: patched vs oracle (Excel's own rename)
+OK   S1!A1    base='Rate*2'                       oracle='Growth*2'                     patched='Growth*2'
+OK   S1!B10   base='(shared child)'               oracle='(shared child)'               patched='(shared child)'
+OK   S1!B11   base='(shared child)'               oracle='(shared child)'               patched='(shared child)'
+OK   S1!B2    base='A2*Rate'                      oracle='A2*Growth'                    patched='A2*Growth'
+OK   S1!B3    base='(shared child)'               oracle='(shared child)'               patched='(shared child)'
+OK   S1!B4    base='(shared child)'               oracle='(shared child)'               patched='(shared child)'
+OK   S1!B5    base='(shared child)'               oracle='(shared child)'               patched='(shared child)'
+OK   S1!B6    base='(shared child)'               oracle='(shared child)'               patched='(shared child)'
+OK   S1!B7    base='(shared child)'               oracle='(shared child)'               patched='(shared child)'
+OK   S1!B8    base='(shared child)'               oracle='(shared child)'               patched='(shared child)'
+OK   S1!B9    base='(shared child)'               oracle='(shared child)'               patched='(shared child)'
+OK   S1!C1    base='RateX+Rate'                   oracle='RateX+Growth'                 patched='RateX+Growth'
+OK   S1!C10   base='Rate2+Fn(1)'                  oracle='Rate2+Fx(1)'                  patched='Rate2+Fx(1)'
+OK   S1!C2    base='"Rate is "&Rate'              oracle='"Rate is "&Growth'            patched='"Rate is "&Growth'
+OK   S1!C3    base='_xlfn.LET(_xlpm.Rate, 5, _xlpm.Rate*2)' oracle='_xlfn.LET(_xlpm.Rate, 5, _xlpm.Rate*2)' patched='_xlfn.LET(_xlpm.Rate, 5, _xlpm.Rate*2)'
+OK   S1!C4    base='Fn(10)'                       oracle='Fx(10)'                       patched='Fx(10)'
+OK   S1!C5    base="'S2'!Loc+Loc"                 oracle="'S2'!Spot+Loc"                patched="'S2'!Spot+Loc"
+OK   S1!C6    base='SUM(Spl)'                     oracle='SUM(Spl)'                     patched='SUM(Spl)'
+OK   S1!C7    base='INDIRECT("Rate")'             oracle='INDIRECT("Rate")'             patched='INDIRECT("Rate")'
+OK   S1!C8    base='Rate*3'                       oracle='Growth*3'                     patched='Growth*3'
+OK   S1!C9    base='ROWS(_xlfn.ANCHORARRAY(E1))*Rate' oracle='ROWS(_xlfn.ANCHORARRAY(E1))*Growth' patched='ROWS(_xlfn.ANCHORARRAY(E1))*Growth'
+OK   S1!E1    base='_xlfn.SEQUENCE(3)*Rate'       oracle='_xlfn.SEQUENCE(3)*Growth'     patched='_xlfn.SEQUENCE(3)*Growth'
+OK   S2!A1    base='Loc'                          oracle='Spot'                         patched='Spot'
+OK   S2!A2    base='Rate+Loc'                     oracle='Growth+Spot'                  patched='Growth+Spot'
+OK   S2!A3    base='Loc*ROW()'                    oracle='Spot*ROW()'                   patched='Spot*ROW()'
+OK   S2!A4    base='(shared child)'               oracle='(shared child)'               patched='(shared child)'
+OK   S2!A5    base='(shared child)'               oracle='(shared child)'               patched='(shared child)'
+OK   S2!B1    base="'S1'!A1+'S2'!Loc"             oracle="'S1'!A1+'S2'!Spot"            patched="'S1'!A1+'S2'!Spot"
+
+## 5b names: patched vs oracle
+OK   Fx         oracle='_xlfn.LAMBDA(_xlpm.x, _xlpm.x*Growth)' patched='_xlfn.LAMBDA(_xlpm.x, _xlpm.x*Growth)'
+OK   Growth     oracle='0.1'                        patched='0.1'
+OK   Loc        oracle='3'                          patched='3'
+OK   Rate2      oracle='Growth*2'                   patched='Growth*2'
+OK   RateX      oracle='0.5'                        patched='0.5'
+OK   S2!Spot    oracle='7'                          patched='7'
+OK   Spl        oracle="_xlfn.ANCHORARRAY('S1'!$E$1)" patched="_xlfn.ANCHORARRAY('S1'!$E$1)"
+
+## 5c CF / DV formulas: patched vs oracle
+OK   S1 formula#0       base='A2>Rate*50'         oracle='A2>Growth*50'           patched='A2>Growth*50'
+OK   S1 formula1#1      base='Rate+Loc'           oracle='Growth+Loc'             patched='Growth+Loc'
+=> 0 difference(s) from Excel's own rename
+
+## 5d values after Excel recalculated the patched file vs base (must not change)
+OK   S1!A1    base='0.2'                  after='0.2'
+OK   S1!B10   base='0.9'                  after='0.9'
+OK   S1!B11   base='1'                    after='1'
+OK   S1!B2    base='0.1'                  after='0.1'
+OK   S1!B3    base='0.2'                  after='0.2'
+OK   S1!B4    base='0.30000000000000004'  after='0.30000000000000004'
+OK   S1!B5    base='0.4'                  after='0.4'
+OK   S1!B6    base='0.5'                  after='0.5'
+OK   S1!B7    base='0.60000000000000009'  after='0.60000000000000009'
+OK   S1!B8    base='0.70000000000000007'  after='0.70000000000000007'
+OK   S1!B9    base='0.8'                  after='0.8'
+OK   S1!C1    base='0.6'                  after='0.6'
+OK   S1!C10   base='0.30000000000000004'  after='0.30000000000000004'
+OK   S1!C2    base='Rate is 0.1'          after='Rate is 0.1'
+OK   S1!C3    base='10'                   after='10'
+OK   S1!C4    base='1'                    after='1'
+OK   S1!C5    base='10'                   after='10'
+OK   S1!C6    base='0.60000000000000009'  after='0.60000000000000009'
+OK   S1!C7    base='#REF!'                after='#REF!'
+OK   S1!C8    base='0.30000000000000004'  after='0.30000000000000004'
+OK   S1!C9    base='0.30000000000000004'  after='0.30000000000000004'
+OK   S1!E1    base='0.1'                  after='0.1'
+OK   S2!A1    base='7'                    after='7'
+OK   S2!A2    base='7.1'                  after='7.1'
+OK   S2!A3    base='21'                   after='21'
+OK   S2!A4    base='28'                   after='28'
+OK   S2!A5    base='35'                   after='35'
+OK   S2!B1    base='7.2'                  after='7.2'
+=> 0 changed value(s)
+
+## 5e formulas after Excel re-saved the patched file vs patched (does Excel keep them?)
+=> 0 formula(s) rewritten by Excel on save

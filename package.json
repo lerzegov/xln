@@ -1,0 +1,19 @@
+{
+  "name": "xln-workspace",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "tsc -b packages/*/tsconfig.json && npm run build --workspaces --if-present",
+    "test": "vitest run",
+    "typecheck": "tsc -b packages/*/tsconfig.json --noEmit false",
+    "web": "npm run serve -w xln -- --open --quiet",
+    "open": "node scripts/open.mjs"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0",
+    "vitest": "^2.1.0"
+  }
+}

@@ -1,0 +1,532 @@
+{
+  "file": "f8_p1.xlsx",
+  "title": "F8 p1: cell formulas patched by the F8 recipe (Python), expected clean",
+  "from": "probes/results/f8_p1.xlsx (probe F8, as committed)",
+  "repair": false,
+  "sheets": 4,
+  "customXml": false,
+  "cells": [
+    {
+      "sheet": "N",
+      "cell": "A1",
+      "formula": "1",
+      "value": 1
+    },
+    {
+      "sheet": "N",
+      "cell": "A2",
+      "formula": "2",
+      "value": 2
+    },
+    {
+      "sheet": "N",
+      "cell": "A3",
+      "formula": "3",
+      "value": 3
+    },
+    {
+      "sheet": "N",
+      "cell": "B1",
+      "formula": "=SUM(A1:A3)*100",
+      "value": 600
+    },
+    {
+      "sheet": "N",
+      "cell": "B2",
+      "formula": "=LET(x,A1*10,x+1)",
+      "value": 11
+    },
+    {
+      "sheet": "N",
+      "cell": "B3",
+      "formula": "",
+      "value": null
+    },
+    {
+      "sheet": "N",
+      "cell": "B4",
+      "formula": "=SUM(@A1:A3*2)",
+      "value": {
+        "error": "#VALUE!"
+      }
+    },
+    {
+      "sheet": "N",
+      "cell": "B5",
+      "formula": "=SUM(A1:A3*2)",
+      "value": 12
+    },
+    {
+      "sheet": "N",
+      "cell": "B6",
+      "formula": "=1+2",
+      "value": 3
+    },
+    {
+      "sheet": "N",
+      "cell": "B7",
+      "formula": "=@LAMBDA(x,@x*2)(A3)",
+      "value": 6
+    },
+    {
+      "sheet": "N",
+      "cell": "C1",
+      "formula": "=A1+100",
+      "value": 101
+    },
+    {
+      "sheet": "N",
+      "cell": "C2",
+      "formula": "=UPPER(\"ab\")&A1",
+      "value": "AB1"
+    },
+    {
+      "sheet": "N",
+      "cell": "C3",
+      "formula": "=XLOOKUP(2,A1:A3,A1:A3)*7",
+      "value": 14
+    },
+    {
+      "sheet": "N",
+      "cell": "C4",
+      "formula": "=A1:A3*3",
+      "value": 3
+    },
+    {
+      "sheet": "N",
+      "cell": "C5",
+      "formula": "",
+      "value": 6
+    },
+    {
+      "sheet": "N",
+      "cell": "C6",
+      "formula": "",
+      "value": 9
+    },
+    {
+      "sheet": "D",
+      "cell": "E1",
+      "formula": "=SUM(Spill)",
+      "value": 15
+    },
+    {
+      "sheet": "D",
+      "cell": "E2",
+      "formula": "=SUM(Spill2)",
+      "value": 3
+    },
+    {
+      "sheet": "D",
+      "cell": "E3",
+      "formula": "=ROWS(F6#)",
+      "value": 2
+    },
+    {
+      "sheet": "D",
+      "cell": "E4",
+      "formula": "=ROWS(C6#)",
+      "value": 5
+    },
+    {
+      "sheet": "D",
+      "cell": "E5",
+      "formula": "=SUM(H6#)",
+      "value": 15
+    },
+    {
+      "sheet": "D",
+      "cell": "E6",
+      "formula": "=SUM(J6#)",
+      "value": 3
+    },
+    {
+      "sheet": "D",
+      "cell": "E7",
+      "formula": "=SUM(L6#)",
+      "value": {
+        "error": "#SPILL!"
+      }
+    },
+    {
+      "sheet": "D",
+      "cell": "C6",
+      "formula": "=SEQUENCE(5)",
+      "value": 1
+    },
+    {
+      "sheet": "D",
+      "cell": "C7",
+      "formula": "",
+      "value": 2
+    },
+    {
+      "sheet": "D",
+      "cell": "C8",
+      "formula": "",
+      "value": 3
+    },
+    {
+      "sheet": "D",
+      "cell": "C9",
+      "formula": "",
+      "value": 4
+    },
+    {
+      "sheet": "D",
+      "cell": "C10",
+      "formula": "",
+      "value": 5
+    },
+    {
+      "sheet": "D",
+      "cell": "F6",
+      "formula": "=SEQUENCE(2)",
+      "value": 1
+    },
+    {
+      "sheet": "D",
+      "cell": "F7",
+      "formula": "",
+      "value": 2
+    },
+    {
+      "sheet": "D",
+      "cell": "F8",
+      "formula": "",
+      "value": null
+    },
+    {
+      "sheet": "D",
+      "cell": "F9",
+      "formula": "",
+      "value": null
+    },
+    {
+      "sheet": "D",
+      "cell": "F10",
+      "formula": "",
+      "value": null
+    },
+    {
+      "sheet": "D",
+      "cell": "H6",
+      "formula": "=SEQUENCE(5)",
+      "value": 1
+    },
+    {
+      "sheet": "D",
+      "cell": "H7",
+      "formula": "",
+      "value": 2
+    },
+    {
+      "sheet": "D",
+      "cell": "H8",
+      "formula": "",
+      "value": 3
+    },
+    {
+      "sheet": "D",
+      "cell": "H9",
+      "formula": "",
+      "value": 4
+    },
+    {
+      "sheet": "D",
+      "cell": "H10",
+      "formula": "",
+      "value": 5
+    },
+    {
+      "sheet": "D",
+      "cell": "J6",
+      "formula": "=SEQUENCE(2)",
+      "value": 1
+    },
+    {
+      "sheet": "D",
+      "cell": "J7",
+      "formula": "",
+      "value": 2
+    },
+    {
+      "sheet": "D",
+      "cell": "J8",
+      "formula": "",
+      "value": null
+    },
+    {
+      "sheet": "D",
+      "cell": "J9",
+      "formula": "",
+      "value": null
+    },
+    {
+      "sheet": "D",
+      "cell": "J10",
+      "formula": "",
+      "value": null
+    },
+    {
+      "sheet": "D",
+      "cell": "L6",
+      "formula": "=SEQUENCE(2)",
+      "value": {
+        "error": "#SPILL!"
+      }
+    },
+    {
+      "sheet": "D",
+      "cell": "L7",
+      "formula": "2",
+      "value": 2
+    },
+    {
+      "sheet": "D",
+      "cell": "L8",
+      "formula": "3",
+      "value": 3
+    },
+    {
+      "sheet": "D",
+      "cell": "L9",
+      "formula": "4",
+      "value": 4
+    },
+    {
+      "sheet": "D",
+      "cell": "L10",
+      "formula": "",
+      "value": null
+    },
+    {
+      "sheet": "D",
+      "cell": "N6",
+      "formula": "=42",
+      "value": 42
+    },
+    {
+      "sheet": "D",
+      "cell": "N7",
+      "formula": "",
+      "value": null
+    },
+    {
+      "sheet": "D",
+      "cell": "N8",
+      "formula": "",
+      "value": null
+    },
+    {
+      "sheet": "D",
+      "cell": "N9",
+      "formula": "",
+      "value": null
+    },
+    {
+      "sheet": "D",
+      "cell": "N10",
+      "formula": "",
+      "value": null
+    },
+    {
+      "sheet": "D",
+      "cell": "P6",
+      "formula": "=SEQUENCE(3)",
+      "value": 1
+    },
+    {
+      "sheet": "D",
+      "cell": "P7",
+      "formula": "",
+      "value": 2
+    },
+    {
+      "sheet": "D",
+      "cell": "P8",
+      "formula": "",
+      "value": 3
+    },
+    {
+      "sheet": "D",
+      "cell": "P9",
+      "formula": "",
+      "value": null
+    },
+    {
+      "sheet": "D",
+      "cell": "P10",
+      "formula": "",
+      "value": null
+    },
+    {
+      "sheet": "Slot",
+      "cell": "B1",
+      "formula": "=SEQUENCE(1,3)*10",
+      "value": 10
+    },
+    {
+      "sheet": "Slot",
+      "cell": "C1",
+      "formula": "",
+      "value": 20
+    },
+    {
+      "sheet": "Slot",
+      "cell": "D1",
+      "formula": "",
+      "value": 30
+    },
+    {
+      "sheet": "Slot",
+      "cell": "B2",
+      "formula": "=SUM(B1#)/2",
+      "value": 30
+    },
+    {
+      "sheet": "Slot",
+      "cell": "B6",
+      "formula": "=Costs*0.25",
+      "value": 7.5
+    },
+    {
+      "sheet": "Slot",
+      "cell": "B9",
+      "formula": "=Tax+1",
+      "value": 8.5
+    },
+    {
+      "sheet": "Slot",
+      "cell": "F1",
+      "formula": "=SUM(Revenue)",
+      "value": 60
+    },
+    {
+      "sheet": "Sh",
+      "cell": "B1",
+      "formula": "=A1*2",
+      "value": 2
+    },
+    {
+      "sheet": "Sh",
+      "cell": "B2",
+      "formula": "=A2*2",
+      "value": 4
+    },
+    {
+      "sheet": "Sh",
+      "cell": "B3",
+      "formula": "=A3*100",
+      "value": 300
+    },
+    {
+      "sheet": "Sh",
+      "cell": "B4",
+      "formula": "=A4*2",
+      "value": 8
+    },
+    {
+      "sheet": "Sh",
+      "cell": "B5",
+      "formula": "=A5*2",
+      "value": 10
+    },
+    {
+      "sheet": "Sh",
+      "cell": "C1",
+      "formula": "=A1+1000",
+      "value": 1001
+    },
+    {
+      "sheet": "Sh",
+      "cell": "C2",
+      "formula": "=A2+1",
+      "value": 3
+    },
+    {
+      "sheet": "Sh",
+      "cell": "C3",
+      "formula": "=A3+1",
+      "value": 4
+    },
+    {
+      "sheet": "Sh",
+      "cell": "C4",
+      "formula": "=A4+1",
+      "value": 5
+    },
+    {
+      "sheet": "Sh",
+      "cell": "C5",
+      "formula": "=A5+1",
+      "value": 6
+    },
+    {
+      "sheet": "Sh",
+      "cell": "D1",
+      "formula": "=A1+2000",
+      "value": 2001
+    },
+    {
+      "sheet": "Sh",
+      "cell": "D2",
+      "formula": "=A2*3",
+      "value": 6
+    },
+    {
+      "sheet": "Sh",
+      "cell": "D3",
+      "formula": "=A3*3",
+      "value": 9
+    },
+    {
+      "sheet": "Sh",
+      "cell": "D4",
+      "formula": "=A4*3",
+      "value": 12
+    },
+    {
+      "sheet": "Sh",
+      "cell": "D5",
+      "formula": "=A5*3",
+      "value": 15
+    },
+    {
+      "sheet": "Sh",
+      "cell": "E1",
+      "formula": "=A1*4",
+      "value": 4
+    },
+    {
+      "sheet": "Sh",
+      "cell": "E2",
+      "formula": "=A2*4",
+      "value": 8
+    },
+    {
+      "sheet": "Sh",
+      "cell": "E3",
+      "formula": "=A3*4",
+      "value": 12
+    },
+    {
+      "sheet": "Sh",
+      "cell": "E4",
+      "formula": "=A4*4",
+      "value": 16
+    },
+    {
+      "sheet": "Sh",
+      "cell": "E5",
+      "formula": "=A5*400",
+      "value": 2000
+    }
+  ],
+  "names": [],
+  "evaluate": [],
+  "verify": {
+    "before": "../../results/f8_p1_resaved.xlsx",
+    "mayChange": []
+  }
+}

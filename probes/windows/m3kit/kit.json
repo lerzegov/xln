@@ -1,0 +1,58 @@
+{
+  "format": "xln.m3kit/1",
+  "note": "Written by probes/windows/make_m3_kit.mjs; read by m3_check.ps1 (Windows) and check_m3_winsaved.mjs (Mac).",
+  "embedNamespace": "urn:xln:embedded-source:1",
+  "files": [
+    {
+      "file": "f8_p1.xlsx",
+      "expected": "f8_p1.expected.json",
+      "repair": false
+    },
+    {
+      "file": "f8_q1.xlsx",
+      "expected": "f8_q1.expected.json",
+      "repair": false
+    },
+    {
+      "file": "m3a_names.xlsx",
+      "expected": "m3a_names.expected.json",
+      "repair": false
+    },
+    {
+      "file": "m3b_build.xlsx",
+      "expected": "m3b_build.expected.json",
+      "repair": false
+    },
+    {
+      "file": "m3b_apply.xlsx",
+      "expected": "m3b_apply.expected.json",
+      "repair": false
+    },
+    {
+      "file": "d5_module.xlsx",
+      "expected": "d5_module.expected.json",
+      "repair": false
+    },
+    {
+      "file": "c255_comment.xlsx",
+      "expected": "c255_comment.expected.json",
+      "repair": false
+    },
+    {
+      "file": "c256_comment.xlsx",
+      "expected": "c256_comment.expected.json",
+      "repair": "maybe"
+    },
+    {
+      "file": "f8_p2.xlsx",
+      "expected": "f8_p2.expected.json",
+      "repair": true
+    }
+  ],
+  "reopen": {
+    "workbook": "../../results/f8_p1_resaved.xlsx",
+    "rebuilt": "m3b_build.xlsx",
+    "repair": "f8_p2.xlsx",
+    "script": "xln_excel.ps1"
+  }
+}

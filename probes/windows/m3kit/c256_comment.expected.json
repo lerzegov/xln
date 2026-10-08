@@ -1,0 +1,26 @@
+{
+  "file": "c256_comment.xlsx",
+  "title": "Comment length 256: one over the limit (xln build refuses it; patched in the XML). On the Mac Excel refused to open it",
+  "from": "c255_comment.xlsx with one character added to LongDoc's comment attribute (direct XML patch)",
+  "repair": "maybe",
+  "repairHint": "Excel will probably refuse this file, or offer to repair it. If it asks whether to recover the contents, click Yes [Si], then Close [Chiudi]. If it shows an error, click OK.",
+  "sheets": 2,
+  "customXml": false,
+  "cells": [
+    {
+      "sheet": "S1",
+      "cell": "A1",
+      "formula": "=Rate*2",
+      "value": 0.2
+    }
+  ],
+  "names": [
+    {
+      "name": "LongDoc",
+      "refersTo": "=1",
+      "visible": true
+    }
+  ],
+  "evaluate": [],
+  "verify": null
+}

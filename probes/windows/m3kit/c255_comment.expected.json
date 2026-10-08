@@ -1,0 +1,34 @@
+{
+  "file": "c255_comment.xlsx",
+  "title": "Comment length 255: the limit, opens on the Mac",
+  "from": "probes/results/f7_base.xlsx: pull; LongDoc with a 255-character doc comment; build --no-embed --no-tags",
+  "repair": false,
+  "sheets": 2,
+  "customXml": false,
+  "cells": [
+    {
+      "sheet": "S1",
+      "cell": "A1",
+      "formula": "=Rate*2",
+      "value": 0.2
+    }
+  ],
+  "names": [
+    {
+      "name": "LongDoc",
+      "refersTo": "=1",
+      "comment": "C255 comment: the longest a name comment can be. abcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcdefghijabcde!",
+      "visible": true
+    }
+  ],
+  "evaluate": [
+    {
+      "expr": "LongDoc",
+      "value": 1
+    }
+  ],
+  "verify": {
+    "before": "c255_comment.xlsx",
+    "mayChange": []
+  }
+}

@@ -1,0 +1,4 @@
+# Kit files are compared byte for byte (restore checks, the --reopen script): no line-end
+# conversion on a Windows checkout. Batch files are kept with CR LF, as stored.
+m3kit/** -text
+*.cmd -text

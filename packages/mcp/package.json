@@ -1,0 +1,22 @@
+{
+  "name": "@xln/mcp",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "xln MCP server: check, list names, pull, build and library status for AI agents, over stdio",
+  "bin": {
+    "xln-mcp": "bin/xln-mcp.js"
+  },
+  "main": "dist/server.js",
+  "types": "dist/server.d.ts",
+  "dependencies": {
+    "@modelcontextprotocol/server": "^2.3.1",
+    "@xln/cli": "*",
+    "@xln/core": "*",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "^2.3.1",
+    "@types/node": "^22.0.0"
+  }
+}

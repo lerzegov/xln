@@ -1,0 +1,129 @@
+﻿H00 | INFO | # excel-dim P0 probe -- Windows  2026-10-04 15:07:38Z
+E01 | INFO | OS Microsoft Windows NT 10.0.26200.0; PowerShell 5.1.26100.8655; culture it-IT
+E02 | PASS | LanguageMode=FullLanguage (ConstrainedLanguage blocks most COM objects)
+E03 | INFO | ExecutionPolicy MachinePolicy=Undefined
+E03 | INFO | ExecutionPolicy UserPolicy=Undefined
+E03 | INFO | ExecutionPolicy Process=Bypass
+E03 | INFO | ExecutionPolicy CurrentUser=Undefined
+E03 | INFO | ExecutionPolicy LocalMachine=Undefined
+E04 | PASS | COM Excel.Application created
+T00 | INFO | Excel 16.0 build 20430; decimal sep ',' list sep ';'
+T01 | PASS | created P_K; RefersTo==10
+T02 | FAIL | La formula contiene un errore.
+
+Non si vuole digitare una formula?
+Se il primo carattere è un segno di uguale (=) o di sottrazione (-), in Excel viene interpretato come formula:
+
+• digitando: =1+1, nella cella viene visualizzato: 2
+
+Per risolvere questo problema, anteporre un apostrofo ( ' ):
+
+• digitando: '=1+1, nella cella viene visualizzato: =1+1
+T03 | FAIL | Eccezione da HRESULT: 0x800A03EC
+T04 | FAIL | comment: Eccezione da HRESULT: 0x800A03EC
+T05a | INFO | make at sheet: S2!A1=5 S1!A3=5
+T05b | INFO | make at wb with 'S2!' prefix: ok
+T05c | INFO | names of S2: 'S2'!P_Local; 'S2'!P_Local2
+T06 | INFO | RefersTo=='S1'!$B$1#  COLUMNS->5
+T08 | INFO | after update S1!A4=20 (expect 20)
+T09 | INFO | renamed; S1!A4 formula now =P_K2
+T10 | INFO | deleted; S1!A4 shows #NOME?
+T11 | INFO | rejected with: La formula contiene un errore.
+
+Non si vuole digitare una formula?
+Se il primo carattere è un segno di uguale (=) o di sottrazione (-), in Excel viene interpretato come formula:
+
+• digitando: =1+1, nella cella viene visualizzato: 2
+
+Per risolvere questo problema, anteporre un apostrofo ( ' ):
+
+• digitando: '=1+1, nella cella viene visualizzato: =1+1
+T12 | INFO | rejected: La formula contiene un errore.
+
+Non si vuole digitare una formula?
+Se il primo carattere è un segno di uguale (=) o di sottrazione (-), in Excel viene interpretato come formula:
+
+• digitando: =1+1, nella cella viene visualizzato: 2
+
+Per risolvere questo problema, anteporre un apostrofo ( ' ):
+
+• digitando: '=1+1, nella cella viene visualizzato: =1+1
+T13 | FAIL | La formula contiene un errore.
+
+Non si vuole digitare una formula?
+Se il primo carattere è un segno di uguale (=) o di sottrazione (-), in Excel viene interpretato come formula:
+
+• digitando: =1+1, nella cella viene visualizzato: 2
+
+Per risolvere questo problema, anteporre un apostrofo ( ' ):
+
+• digitando: '=1+1, nella cella viene visualizzato: =1+1
+T14 | FAIL | La formula contiene un errore.
+
+Non si vuole digitare una formula?
+Se il primo carattere è un segno di uguale (=) o di sottrazione (-), in Excel viene interpretato come formula:
+
+• digitando: =1+1, nella cella viene visualizzato: 2
+
+Per risolvere questo problema, anteporre un apostrofo ( ' ):
+
+• digitando: '=1+1, nella cella viene visualizzato: =1+1
+T15 | INFO | 7992 chars rejected: La formula contiene un errore.
+
+Non si vuole digitare una formula?
+Se il primo carattere è un segno di uguale (=) o di sottrazione (-), in Excel viene interpretato come formula:
+
+• digitando: =1+1, nella cella viene visualizzato: 2
+
+Per risolvere questo problema, anteporre un apostrofo ( ' ):
+
+• digitando: '=1+1, nella cella viene visualizzato: =1+1
+T15 | INFO | 8192 chars rejected: La formula contiene un errore.
+
+Non si vuole digitare una formula?
+Se il primo carattere è un segno di uguale (=) o di sottrazione (-), in Excel viene interpretato come formula:
+
+• digitando: =1+1, nella cella viene visualizzato: 2
+
+Per risolvere questo problema, anteporre un apostrofo ( ' ):
+
+• digitando: '=1+1, nella cella viene visualizzato: =1+1
+T15 | INFO | 9012 chars rejected: La formula contiene un errore.
+
+Non si vuole digitare una formula?
+Se il primo carattere è un segno di uguale (=) o di sottrazione (-), in Excel viene interpretato come formula:
+
+• digitando: =1+1, nella cella viene visualizzato: 2
+
+Per risolvere questo problema, anteporre un apostrofo ( ' ):
+
+• digitando: '=1+1, nella cella viene visualizzato: =1+1
+T16 | INFO | evaluate P_Add1(1) -> -2146826259
+T16 | INFO | evaluate ROWS*10+COLUMNS of P_Spill -> 15
+T17 | FAIL | La formula contiene un errore.
+
+Non si vuole digitare una formula?
+Se il primo carattere è un segno di uguale (=) o di sottrazione (-), in Excel viene interpretato come formula:
+
+• digitando: =1+1, nella cella viene visualizzato: 2
+
+Per risolvere questo problema, anteporre un apostrofo ( ' ):
+
+• digitando: '=1+1, nella cella viene visualizzato: =1+1
+T18 | INFO | RefersToLocal with ';' accepted; RefersTo==LAMBDA(x, x+1)
+T07 | INFO | 8 names in workbook collection
+T07 | ITEM | _xlfn.ANCHORARRAY | visible=False | scope=Cartel1 | comment= | =#NAME?
+T07 | ITEM | _xlfn.LAMBDA | visible=False | scope=Cartel1 | comment= | =#NAME?
+T07 | ITEM | _xlfn.SEQUENCE | visible=False | scope=Cartel1 | comment= | =#NAME?
+T07 | ITEM | _xlpm.x | visible=False | scope=Cartel1 | comment= | =#NAME?
+T07 | ITEM | P_Loc | visible=True | scope=Cartel1 | comment= | =LAMBDA(x, x+1)
+T07 | ITEM | 'S2'!P_Local | visible=True | scope=S2 | comment= | =5
+T07 | ITEM | 'S2'!P_Local2 | visible=True | scope=S2 | comment= | =6
+T07 | ITEM | P_Spill | visible=True | scope=Cartel1 | comment= | ='S1'!$B$1#
+T19 | PASS | saved C:\Users\Lenovo\AppData\Local\Temp\excel-dim-probe\probe_win.xlsx
+T20 | INFO | open workbook file is locked: Eccezione durante la chiamata di "Open" con "4" argomento/i: "Il processo non può accedere al file 'C:\Users\Lenovo\AppData\Local\Temp\excel-dim-probe\probe_win.xlsx' perché è in uso da un altro processo."
+X00 | INFO | Stored form (xl/workbook.xml):
+X01 | ITEM | name="P_Loc" => _xlfn.LAMBDA(_xlpm.x, _xlpm.x+1)
+X01 | ITEM | name="P_Local" localSheetId="1" => 5
+X01 | ITEM | name="P_Local2" localSheetId="1" => 6
+X01 | ITEM | name="P_Spill" => _xlfn.ANCHORARRAY('S1'!$B$1)

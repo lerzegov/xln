@@ -1,0 +1,15 @@
+// Sheet S2, pulled by xln from m3a_names.xlsx: its formula cells in sheet order, then
+// the names local to it that no module owns. Every name here is local to S2 unless
+// the line above it says @workbook. A cell's address (@C6) is set in Excel and read-only;
+// edit the formula after '='. `Name @C6 = ;` is a slot: a name on an empty cell.
+// `Name @C6#` names the cell's spill, `Name @C6` the cell alone: add or remove the `#`.
+
+@A1 = Loc;
+@B1 = 'S1'!A1+'S2'!Loc;
+@A2 = Rate+Loc;
+@A3:A5 = Loc*ROW();
+
+// Other names local to S2.
+
+Loc = 7;
+TmpC = 33;

@@ -1,0 +1,437 @@
+{
+  "name": "xln",
+  "displayName": "xln — Excel names as code",
+  "description": "Excel defined names and LAMBDAs as text: pull a workbook's names into .xln modules, edit, check and audit them, and build them back into the .xlsx. No add-in. Desktop VS Code and vscode.dev.",
+  "version": "0.1.1",
+  "publisher": "lerzegov-xln",
+  "private": true,
+  "license": "MIT",
+  "author": {
+    "name": "Luca Erzegovesi"
+  },
+  "homepage": "https://github.com/lerzegov/xln#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lerzegov/xln.git",
+    "directory": "packages/vscode"
+  },
+  "bugs": {
+    "url": "https://github.com/lerzegov/xln/issues"
+  },
+  "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#1d5c46",
+    "theme": "dark"
+  },
+  "engines": {
+    "vscode": "^1.110.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Linters",
+    "Other"
+  ],
+  "keywords": [
+    "excel",
+    "xlsx",
+    "defined names",
+    "name manager",
+    "lambda",
+    "spreadsheet",
+    "formulas",
+    "audit",
+    "financial modelling"
+  ],
+  "main": "./dist/node/extension.js",
+  "browser": "./dist/web/extension.js",
+  "activationEvents": [
+    "workspaceContains:**/xln.lock.json",
+    "workspaceContains:**/*.xln/xln.config.json",
+    "workspaceContains:**/*.xln/names/*.xln",
+    "onLanguage:xln"
+  ],
+  "contributes": {
+    "configurationDefaults": {
+      "[xln]": {
+        "editor.wordBasedSuggestions": "off"
+      },
+      "files.exclude": {
+        "**/*.xln/workbook.manifest.json": true,
+        "**/*.xln/xln.lock.json": true,
+        "**/*.xln/library-bases": true
+      },
+      "files.readonlyInclude": {
+        "**/*.xln/workbook.manifest.json": true,
+        "**/*.xln/xln.lock.json": true,
+        "**/*.xln/library-bases/**": true
+      }
+    },
+    "languages": [
+      {
+        "id": "xln",
+        "aliases": [
+          "xln",
+          "Excel names module"
+        ],
+        "extensions": [
+          ".xln"
+        ],
+        "configuration": "./language-configuration.json"
+      },
+      {
+        "id": "xln-formulas",
+        "aliases": [
+          "xln formula view"
+        ],
+        "filenamePatterns": [
+          "* (formulas)",
+          "* (calculation order)"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "xln",
+        "scopeName": "source.xln",
+        "path": "./syntaxes/xln.tmLanguage.json"
+      },
+      {
+        "language": "xln-formulas",
+        "scopeName": "source.xln-formulas",
+        "path": "./syntaxes/xln-formulas.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "xln.pullWorkbook",
+        "title": "Pull workbook",
+        "category": "xln"
+      },
+      {
+        "command": "xln.buildWorkbook",
+        "title": "Build workbook (write names)",
+        "category": "xln",
+        "icon": "$(save-all)"
+      },
+      {
+        "command": "xln.buildAndReopen",
+        "title": "Build and reopen in Excel",
+        "category": "xln",
+        "enablement": "!isWeb"
+      },
+      {
+        "command": "xln.searchNames",
+        "title": "Search names",
+        "category": "xln"
+      },
+      {
+        "command": "xln.showUsages",
+        "title": "Show cell usages",
+        "category": "xln"
+      },
+      {
+        "command": "xln.formulaView",
+        "title": "Formula view",
+        "category": "xln",
+        "icon": "$(table)"
+      },
+      {
+        "command": "xln.formulaViewCalc",
+        "title": "Formula view (calculation order)",
+        "category": "xln"
+      },
+      {
+        "command": "xln.workbookFormulaView",
+        "title": "Workbook formula view (calculation order)",
+        "category": "xln"
+      },
+      {
+        "command": "xln.formulaViewToggleOrder",
+        "title": "Switch formula view order (appearance / calculation)",
+        "category": "xln",
+        "icon": "$(list-tree)"
+      },
+      {
+        "command": "xln.auditWorkbook",
+        "title": "Audit workbook",
+        "category": "xln",
+        "icon": "$(checklist)"
+      },
+      {
+        "command": "xln.newModule",
+        "title": "New module",
+        "category": "xln",
+        "icon": "$(add)"
+      },
+      {
+        "command": "xln.showInternals",
+        "title": "Show project internals",
+        "category": "xln"
+      },
+      {
+        "command": "xln.hideInternals",
+        "title": "Hide project internals",
+        "category": "xln"
+      },
+      {
+        "command": "xln.reload",
+        "title": "Reload",
+        "category": "xln"
+      },
+      {
+        "command": "xln.inspectWorkbook",
+        "title": "Inspect workbook",
+        "category": "xln"
+      },
+      {
+        "command": "xln.writeTestFile",
+        "title": "Write test file",
+        "category": "xln"
+      },
+      {
+        "command": "xln.revealName",
+        "title": "Reveal name",
+        "category": "xln"
+      },
+      {
+        "command": "xln.libraryStatus",
+        "title": "Library status",
+        "category": "xln"
+      },
+      {
+        "command": "xln.insertLibraryFunction",
+        "title": "Insert library function",
+        "category": "xln"
+      },
+      {
+        "command": "xln.insertLibraryDefinition",
+        "title": "Add a library function's definition",
+        "category": "xln"
+      },
+      {
+        "command": "xln.takeLibraryVersion",
+        "title": "Take the library's version",
+        "category": "xln"
+      },
+      {
+        "command": "xln.showLibraryDiff",
+        "title": "Show diff with the library",
+        "category": "xln"
+      },
+      {
+        "command": "xln.publishToLibrary",
+        "title": "Publish to library",
+        "category": "xln"
+      },
+      {
+        "command": "xln.recordLibraryBase",
+        "title": "Record library base",
+        "category": "xln"
+      },
+      {
+        "command": "xln.showLabelNotice",
+        "title": "Show labels to fix after a rename",
+        "category": "xln"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "xln.pullWorkbook",
+          "when": "resourceExtname == .xlsx || resourceExtname == .xlsm",
+          "group": "xln@0"
+        },
+        {
+          "command": "xln.formulaView",
+          "when": "resourceExtname == .xlsx || resourceExtname == .xlsm",
+          "group": "xln@0"
+        },
+        {
+          "command": "xln.formulaViewCalc",
+          "when": "resourceExtname == .xlsx || resourceExtname == .xlsm",
+          "group": "xln@0"
+        },
+        {
+          "command": "xln.workbookFormulaView",
+          "when": "resourceExtname == .xlsx || resourceExtname == .xlsm",
+          "group": "xln@0"
+        },
+        {
+          "command": "xln.auditWorkbook",
+          "when": "resourceExtname == .xlsx || resourceExtname == .xlsm",
+          "group": "xln@0"
+        },
+        {
+          "command": "xln.libraryStatus",
+          "when": "resourceExtname == .xlsx || resourceExtname == .xlsm || resourceExtname == .xln || resourcePath =~ /\\.xln\\//",
+          "group": "xln@0"
+        },
+        {
+          "command": "xln.buildWorkbook",
+          "when": "resourceExtname == .xln || resourcePath =~ /\\.xln\\//",
+          "group": "xln@0"
+        },
+        {
+          "command": "xln.buildAndReopen",
+          "when": "!isWeb && (resourceExtname == .xln || resourcePath =~ /\\.xln\\//)",
+          "group": "xln@0"
+        },
+        {
+          "command": "xln.newModule",
+          "when": "resourceExtname == .xln || resourcePath =~ /\\.xln\\//",
+          "group": "xln@0"
+        },
+        {
+          "command": "xln.insertLibraryFunction",
+          "when": "resourceExtname == .xln || resourcePath =~ /\\.xln\\//",
+          "group": "xln@0"
+        },
+        {
+          "command": "xln.inspectWorkbook",
+          "when": "resourceExtname == .xlsx",
+          "group": "xln@1"
+        },
+        {
+          "command": "xln.writeTestFile",
+          "when": "explorerResourceIsFolder || resourceExtname == .xlsx",
+          "group": "xln@2"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "xln.showUsages",
+          "when": "editorLangId == xln",
+          "group": "navigation@90"
+        },
+        {
+          "command": "xln.formulaView",
+          "when": "editorLangId == xln || resourceScheme == xln-cells",
+          "group": "navigation@91"
+        },
+        {
+          "command": "xln.auditWorkbook",
+          "when": "editorLangId == xln",
+          "group": "navigation@92"
+        },
+        {
+          "command": "xln.buildWorkbook",
+          "when": "editorLangId == xln",
+          "group": "navigation@93"
+        },
+        {
+          "command": "xln.buildAndReopen",
+          "when": "!isWeb && editorLangId == xln",
+          "group": "navigation@94"
+        },
+        {
+          "command": "xln.libraryStatus",
+          "when": "editorLangId == xln",
+          "group": "navigation@95"
+        },
+        {
+          "command": "xln.insertLibraryFunction",
+          "when": "editorLangId == xln",
+          "group": "navigation@96"
+        },
+        {
+          "command": "xln.publishToLibrary",
+          "when": "editorLangId == xln",
+          "group": "navigation@97"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "xln.showUsages",
+          "when": "editorLangId == xln"
+        },
+        {
+          "command": "xln.formulaViewToggleOrder",
+          "when": "resourceScheme == xln-formulas"
+        },
+        {
+          "command": "xln.revealName",
+          "when": "false"
+        },
+        {
+          "command": "xln.buildAndReopen",
+          "when": "!isWeb"
+        },
+        {
+          "command": "xln.insertLibraryDefinition",
+          "when": "false"
+        },
+        {
+          "command": "xln.takeLibraryVersion",
+          "when": "editorLangId == xln"
+        },
+        {
+          "command": "xln.showLibraryDiff",
+          "when": "editorLangId == xln"
+        },
+        {
+          "command": "xln.publishToLibrary",
+          "when": "editorLangId == xln"
+        },
+        {
+          "command": "xln.recordLibraryBase",
+          "when": "editorLangId == xln"
+        },
+        {
+          "command": "xln.showInternals",
+          "when": "!xln.internalsShown"
+        },
+        {
+          "command": "xln.hideInternals",
+          "when": "xln.internalsShown"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "xln.formulaView",
+          "when": "resourceExtname == .xln && resourcePath =~ /\\/names\\/sheets\\/[^\\/]+\\.xln$/",
+          "group": "navigation"
+        },
+        {
+          "command": "xln.formulaViewToggleOrder",
+          "when": "resourceScheme == xln-formulas",
+          "group": "navigation"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "xln.newModule",
+          "when": "view == workbench.explorer.fileView && xln.hasProject",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "watch": "node scripts/build.mjs --watch",
+    "package": "npm run build && vsce package --no-dependencies --baseContentUrl https://github.com/lerzegov/xln/blob/HEAD/packages/vscode --baseImagesUrl https://github.com/lerzegov/xln/raw/HEAD/packages/vscode",
+    "icon": "node scripts/icon.mjs",
+    "test:web": "npm run build && node scripts/test-web.mjs",
+    "test:desktop": "npm run build && node scripts/test-desktop.mjs",
+    "test:vscode-dev": "npm run build && node scripts/probe-vscode-dev.mjs",
+    "serve": "npm run build && node scripts/serve-https.mjs"
+  },
+  "dependencies": {
+    "@xln/core": "*",
+    "fflate": "^0.8.3"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/vscode": "~1.110.0",
+    "@vscode/test-electron": "^3.1.0",
+    "@vscode/test-web": "^0.0.81",
+    "@vscode/vsce": "^4.0.0",
+    "esbuild": "^0.28.2",
+    "mocha": "^12.0.3",
+    "ovsx": "^1.2.0",
+    "playwright": "^1.63.0",
+    "vscode-oniguruma": "^2.0.1",
+    "vscode-textmate": "^9.3.2"
+  }
+}

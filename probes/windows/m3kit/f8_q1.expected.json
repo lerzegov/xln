@@ -1,0 +1,40 @@
+{
+  "file": "f8_q1.xlsx",
+  "title": "F8 q1: dynamic array in a workbook without metadata.xml (created), expected clean",
+  "from": "probes/results/f8_q1.xlsx (probe F8, as committed)",
+  "repair": false,
+  "sheets": 1,
+  "customXml": false,
+  "cells": [
+    {
+      "sheet": "P",
+      "cell": "B1",
+      "formula": "=SEQUENCE(3)*A1",
+      "value": 1
+    },
+    {
+      "sheet": "P",
+      "cell": "B2",
+      "formula": "",
+      "value": 2
+    },
+    {
+      "sheet": "P",
+      "cell": "B3",
+      "formula": "",
+      "value": 3
+    },
+    {
+      "sheet": "P",
+      "cell": "C1",
+      "formula": "=SUM(B1#)",
+      "value": 6
+    }
+  ],
+  "names": [],
+  "evaluate": [],
+  "verify": {
+    "before": "../../results/f8_q1_resaved.xlsx",
+    "mayChange": []
+  }
+}

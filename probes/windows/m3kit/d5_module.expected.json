@@ -1,0 +1,51 @@
+{
+  "file": "d5_module.xlsx",
+  "title": "D5/D6: module FN (// @version 1.2) built with the embedded source and provenance tags",
+  "from": "probes/results/f7_base.xlsx: pull; add names/FN.xln; build (embed and tags on)",
+  "repair": false,
+  "sheets": 2,
+  "customXml": true,
+  "project": "d5_module.xln",
+  "cells": [
+    {
+      "sheet": "S1",
+      "cell": "A1",
+      "formula": "=Rate*2",
+      "value": 0.2
+    },
+    {
+      "sheet": "S1",
+      "cell": "C4",
+      "formula": "=Fn(10)",
+      "value": 1
+    }
+  ],
+  "names": [
+    {
+      "name": "FN.Double",
+      "refersTo": "=LAMBDA(x,x*2)",
+      "comment": "Doubles a number.\nSecond line: checked on Windows (D5, D6). [xln FN 1.2 #96585d]",
+      "visible": true
+    },
+    {
+      "name": "FN.AddRate",
+      "refersTo": "=LAMBDA(x,x+Rate)",
+      "comment": "Adds the workbook's Rate. [xln FN 1.2 #744f8e]",
+      "visible": true
+    }
+  ],
+  "evaluate": [
+    {
+      "expr": "FN.Double(21)",
+      "value": 42
+    },
+    {
+      "expr": "FN.AddRate(1)",
+      "value": 1.1
+    }
+  ],
+  "verify": {
+    "before": "d5_module.xlsx",
+    "mayChange": []
+  }
+}

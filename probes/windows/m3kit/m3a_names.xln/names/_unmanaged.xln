@@ -1,0 +1,22 @@
+// Workbook-scoped names that no module owns, pulled by xln from m3a_names.xlsx.
+// A name with a module prefix (ANA.GROW) is pulled into its module's file instead.
+
+Fn = LAMBDA(x, x*Rate);
+Loc = 3;
+Rate = 0.2;
+Rate2 = Rate*2;
+RateX = 0.5;
+
+/**
+ * Growth factor over n years.
+ * Second line of the comment.
+ */
+Grow = LAMBDA(g, n,
+  LET(f, 1 + g,
+    f ^ n));
+
+@hidden
+Secret = 42;
+
+@renamed(TmpA)
+RenamedA = 11;

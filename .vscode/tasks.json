@@ -1,0 +1,13 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "xln: build extension",
+      "type": "npm",
+      "script": "build",
+      "path": "packages/vscode",
+      "problemMatcher": [],
+      "group": "build"
+    }
+  ]
+}

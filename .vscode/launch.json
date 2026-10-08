@@ -1,0 +1,26 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "xln: run extension (desktop)",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": ["--extensionDevelopmentPath=${workspaceFolder}/packages/vscode", "${workspaceFolder}/probes/results"],
+      "outFiles": ["${workspaceFolder}/packages/vscode/dist/node/**/*.js"],
+      "preLaunchTask": "xln: build extension"
+    },
+    {
+      "name": "xln: run extension (web worker in desktop)",
+      "type": "extensionHost",
+      "debugWebWorkerHost": true,
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/packages/vscode",
+        "--extensionDevelopmentKind=web",
+        "${workspaceFolder}/probes/results"
+      ],
+      "outFiles": ["${workspaceFolder}/packages/vscode/dist/web/**/*.js"],
+      "preLaunchTask": "xln: build extension"
+    }
+  ]
+}

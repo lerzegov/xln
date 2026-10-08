@@ -1,0 +1,63 @@
+[
+  {
+    "op": "set-cell-formula",
+    "sheet": "Sh",
+    "range": "C3",
+    "stored": "A3*100",
+    "display": "A3*100"
+  },
+  {
+    "op": "set-cell-formula",
+    "sheet": "Sh",
+    "range": "D1",
+    "stored": "A1*30",
+    "display": "A1*30"
+  },
+  {
+    "op": "set-cell-formula",
+    "sheet": "N",
+    "range": "C1",
+    "stored": "SUM(A1:A3)*2",
+    "display": "SUM(A1:A3)*2"
+  },
+  {
+    "op": "set-cell-formula",
+    "sheet": "N",
+    "range": "C2",
+    "stored": "\"hi \"&A1",
+    "display": "\"hi \"&A1"
+  },
+  {
+    "op": "set-cell-formula",
+    "sheet": "N",
+    "range": "C4",
+    "stored": "_xlfn.SEQUENCE(2,2)",
+    "display": "SEQUENCE(2,2)"
+  },
+  {
+    "op": "set-cell-formula",
+    "sheet": "Slot",
+    "range": "B6",
+    "stored": "7",
+    "display": "7"
+  },
+  {
+    "op": "set-cell-formula",
+    "sheet": "D",
+    "range": "H6",
+    "stored": "42",
+    "display": "42"
+  },
+  {
+    "op": "set-cell-formula",
+    "sheet": "D",
+    "range": "P6",
+    "stored": "_xlfn.SEQUENCE(3)",
+    "display": "SEQUENCE(3)"
+  },
+  {
+    "op": "clear-cell-formula",
+    "sheet": "D",
+    "range": "E6"
+  }
+]

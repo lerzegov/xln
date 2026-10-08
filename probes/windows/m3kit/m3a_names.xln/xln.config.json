@@ -1,0 +1,9 @@
+{
+  "audit": {
+    "harness": [],
+    "rules": {},
+    "constants": {
+      "allow": []
+    }
+  }
+}

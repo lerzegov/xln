@@ -1,0 +1,12 @@
+// module: FN, written for the M3 Windows check
+// @version 1.2
+
+/**
+ * Doubles a number.
+ * Second line: checked on Windows (D5, D6).
+ */
+FN.Double = LAMBDA(x, x * 2);
+
+/** Adds the workbook's Rate. */
+FN.AddRate = LAMBDA(x,
+  x + Rate);

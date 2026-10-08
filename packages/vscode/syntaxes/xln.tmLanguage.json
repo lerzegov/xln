@@ -1,0 +1,345 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "xln",
+  "scopeName": "source.xln",
+  "fileTypes": ["xln"],
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#cell-statement" },
+    { "include": "#annotation" },
+    { "include": "#definition" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.block.documentation.xln",
+          "begin": "/\\*\\*(?!/)",
+          "end": "\\*/",
+          "beginCaptures": { "0": { "name": "punctuation.definition.comment.begin.xln" } },
+          "endCaptures": { "0": { "name": "punctuation.definition.comment.end.xln" } }
+        },
+        {
+          "name": "comment.block.xln",
+          "begin": "/\\*",
+          "end": "\\*/",
+          "beginCaptures": { "0": { "name": "punctuation.definition.comment.begin.xln" } },
+          "endCaptures": { "0": { "name": "punctuation.definition.comment.end.xln" } }
+        },
+        {
+          "name": "comment.line.double-slash.xln",
+          "match": "(//).*$",
+          "captures": { "1": { "name": "punctuation.definition.comment.xln" } }
+        }
+      ]
+    },
+
+    "annotation": {
+      "patterns": [{ "include": "#scope-block" }, { "include": "#library-base" }, { "include": "#annotation-other" }]
+    },
+
+    "library-base": {
+      "comment": "@from(lib #353921): the library version this copy came from (Insert, Take and Publish write it; the build carries it in the provenance tag).",
+      "name": "meta.annotation.library-base.xln",
+      "match": "(@)(from)\\s*(\\()\\s*(lib)\\s*(#)([0-9A-Fa-f]{6})\\s*(\\))",
+      "captures": {
+        "1": { "name": "punctuation.definition.annotation.xln" },
+        "2": { "name": "storage.type.annotation.from.xln" },
+        "3": { "name": "punctuation.definition.arguments.begin.xln" },
+        "4": { "name": "entity.name.namespace.library.xln" },
+        "5": { "name": "punctuation.definition.constant.xln" },
+        "6": { "name": "constant.numeric.hex.library-version.xln" },
+        "7": { "name": "punctuation.definition.arguments.end.xln" }
+      }
+    },
+
+    "scope-block": {
+      "comment": "Scope annotations, per name. In a sheet file (names/sheets/<Sheet>.xln) every name is local to the sheet, and @workbook on the line above a name makes that name workbook-scoped. In a module file every name is workbook-scoped, and @sheet(Sheet) on the line above a name makes it local to Sheet (like @hidden, the next statement only); in a sheet file @sheet(Name) alone on a line names the file's sheet. Files written before 2026-10-07 may have @scope(Sheet) blocks, read until the next @scope(...) or @workbook. The sheet is quoted only when it holds spaces, parentheses or quotes.",
+      "patterns": [
+        {
+          "name": "meta.annotation.scope-block.xln",
+          "match": "(@)(scope)\\s*(\\()\\s*((?:'(?:[^']|'')*')|[^)]*?)\\s*(\\))",
+          "captures": {
+            "1": { "name": "punctuation.definition.annotation.xln" },
+            "2": { "name": "storage.type.annotation.scope.xln" },
+            "3": { "name": "punctuation.definition.arguments.begin.xln" },
+            "4": { "name": "entity.name.namespace.sheet.xln" },
+            "5": { "name": "punctuation.definition.arguments.end.xln" }
+          }
+        },
+        {
+          "name": "meta.annotation.scope.xln",
+          "match": "(@)(sheet)\\s*(\\()\\s*((?:'(?:[^']|'')*')|[^)]*?)\\s*(\\))",
+          "captures": {
+            "1": { "name": "punctuation.definition.annotation.xln" },
+            "2": { "name": "storage.type.annotation.sheet.xln" },
+            "3": { "name": "punctuation.definition.arguments.begin.xln" },
+            "4": { "name": "entity.name.namespace.sheet.xln" },
+            "5": { "name": "punctuation.definition.arguments.end.xln" }
+          }
+        },
+        {
+          "name": "meta.annotation.scope-block.xln",
+          "match": "(@)(workbook)(?![\\p{L}\\p{N}_])",
+          "captures": {
+            "1": { "name": "punctuation.definition.annotation.xln" },
+            "2": { "name": "storage.type.annotation.workbook.xln" }
+          }
+        }
+      ]
+    },
+
+    "annotation-other": {
+      "comment": "@hidden and future @name(args) annotations before a definition.",
+      "name": "meta.annotation.xln",
+      "match": "(@)([\\p{L}_][\\p{L}\\p{N}_]*)(?:\\s*(\\()\\s*((?:'(?:[^']|'')*')|[^)]*?)\\s*(\\)))?",
+      "captures": {
+        "1": { "name": "punctuation.definition.annotation.xln" },
+        "2": { "name": "storage.type.annotation.xln" },
+        "3": { "name": "punctuation.definition.arguments.begin.xln" },
+        "4": { "name": "entity.name.namespace.sheet.xln" },
+        "5": { "name": "punctuation.definition.arguments.end.xln" }
+      }
+    },
+
+    "cell-statement": {
+      "comment": "@C5 = formula;  an unnamed cell; @B40:G40 a block; @Sheet!C5 with its sheet. The address is set in Excel (read-only).",
+      "name": "meta.cell-statement.xln",
+      "begin": "(@)((?:'(?:[^']|'')+'|[^\\s!'=;@()/:]+)(?=!))?(!)?(\\$?[A-Za-z]{1,3}\\$?[0-9]{1,7}(?::\\$?[A-Za-z]{1,3}\\$?[0-9]{1,7})?)\\s*(=)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.cell.xln" },
+        "2": { "name": "entity.name.namespace.sheet.xln" },
+        "3": { "name": "punctuation.separator.sheet.xln" },
+        "4": { "name": "constant.other.reference.cell.address.xln" },
+        "5": { "name": "keyword.operator.assignment.xln" }
+      },
+      "end": ";",
+      "endCaptures": { "0": { "name": "punctuation.terminator.statement.xln" } },
+      "contentName": "meta.formula.xln",
+      "patterns": [{ "include": "#formula" }]
+    },
+
+    "definition": {
+      "comment": "name = formula;  Module.name = formula;  Name @C6 = formula; (a named cell, its address read-only); Name @C6# = formula; (the name on C6's spill: the # is editable). The formula may span lines. An AFE type declaration (Name : type = …) is not xln v1: marked invalid.",
+      "name": "meta.definition.xln",
+      "begin": "((?:[\\p{L}_\\\\][\\p{L}\\p{N}_?\\\\]*\\.)*)([\\p{L}_\\\\][\\p{L}\\p{N}_?\\\\]*)\\s*(?:(:)\\s*([^=;]*?)\\s*|(@)((?:'(?:[^']|'')+'|[^\\s!'=;@()/:]+)(?=!))?(!)?(\\$?[A-Za-z]{1,3}\\$?[0-9]{1,7}(?::\\$?[A-Za-z]{1,3}\\$?[0-9]{1,7})?)(#)?\\s*)?(=)",
+      "beginCaptures": {
+        "1": { "name": "entity.name.namespace.module.xln" },
+        "2": { "name": "entity.name.function.xln" },
+        "3": { "name": "invalid.illegal.type-declaration.xln" },
+        "4": { "name": "invalid.illegal.type-declaration.xln" },
+        "5": { "name": "punctuation.definition.cell.xln" },
+        "6": { "name": "entity.name.namespace.sheet.xln" },
+        "7": { "name": "punctuation.separator.sheet.xln" },
+        "8": { "name": "constant.other.reference.cell.address.xln" },
+        "9": { "name": "keyword.operator.spill.address.xln" },
+        "10": { "name": "keyword.operator.assignment.xln" }
+      },
+      "end": ";",
+      "endCaptures": { "0": { "name": "punctuation.terminator.statement.xln" } },
+      "contentName": "meta.formula.xln",
+      "patterns": [{ "include": "#formula" }]
+    },
+
+
+    "formula": {
+      "patterns": [
+        { "include": "#comments" },
+        { "include": "#string" },
+        { "include": "#array" },
+        { "include": "#error" },
+        { "include": "#sheet-prefix" },
+        { "include": "#reference" },
+        { "include": "#structured-reference" },
+        { "include": "#spill" },
+        { "include": "#lambda-let" },
+        { "include": "#function-call" },
+        { "include": "#parameter" },
+        { "include": "#boolean" },
+        { "include": "#number" },
+        { "include": "#name" },
+        { "include": "#operator" },
+        { "include": "#parens" }
+      ]
+    },
+
+    "string": {
+      "name": "string.quoted.double.xln",
+      "begin": "\"",
+      "end": "\"(?!\")",
+      "beginCaptures": { "0": { "name": "punctuation.definition.string.begin.xln" } },
+      "endCaptures": { "0": { "name": "punctuation.definition.string.end.xln" } },
+      "patterns": [{ "match": "\"\"", "name": "constant.character.escape.xln" }]
+    },
+
+    "array": {
+      "comment": "Array constant {1,2;3,4}: its ';' separates rows and must not end the definition.",
+      "name": "meta.array.xln",
+      "begin": "\\{",
+      "end": "\\}",
+      "beginCaptures": { "0": { "name": "punctuation.definition.array.begin.xln" } },
+      "endCaptures": { "0": { "name": "punctuation.definition.array.end.xln" } },
+      "patterns": [
+        { "match": ";", "name": "punctuation.separator.array.row.xln" },
+        { "match": ",", "name": "punctuation.separator.array.column.xln" },
+        { "include": "#formula" }
+      ]
+    },
+
+    "error": {
+      "match": "(?i)#(?:NULL!|DIV/0!|VALUE!|REF!|NAME\\?|NUM!|N/A|GETTING_DATA|SPILL!|CALC!|FIELD!|BLOCKED!|CONNECT!|BUSY!|UNKNOWN!|PYTHON!|EXTERNAL!)",
+      "name": "constant.language.error.xln"
+    },
+
+    "sheet-prefix": {
+      "comment": "'Sheet name'!  Sheet1!  Sheet1:Sheet3!  [1]Sheet1!  '[Book.xlsx]Sheet 1'!",
+      "patterns": [
+        {
+          "match": "(')((?:[^']|'')+)(')(!)",
+          "captures": {
+            "1": { "name": "punctuation.definition.sheet.begin.xln" },
+            "2": { "name": "entity.name.namespace.sheet.xln" },
+            "3": { "name": "punctuation.definition.sheet.end.xln" },
+            "4": { "name": "punctuation.separator.sheet.xln" }
+          }
+        },
+        {
+          "match": "((?:\\[[^\\]]+\\])?[\\p{L}_\\\\][\\p{L}\\p{N}_.\\\\]*(?::[\\p{L}_\\\\][\\p{L}\\p{N}_.\\\\]*)?)(!)",
+          "captures": {
+            "1": { "name": "entity.name.namespace.sheet.xln" },
+            "2": { "name": "punctuation.separator.sheet.xln" }
+          }
+        }
+      ]
+    },
+
+    "reference": {
+      "comment": "A1 cells, A:C columns, 1:3 rows, and the TRIMRANGE dot operators (A1:.B9).",
+      "patterns": [
+        {
+          "match": "(?:(?<=:\\.)|(?<![\\p{L}\\p{N}_.?\\\\$]))\\$?[A-Za-z]{1,3}\\$?[0-9]{1,7}(?![\\p{L}\\p{N}_?\\\\(\\[]|\\.(?!:))",
+          "name": "constant.other.reference.cell.xln"
+        },
+        {
+          "match": "(?<![\\p{L}\\p{N}_.?\\\\$])\\$?[A-Za-z]{1,3}(?=\\.?:\\.?\\$?[A-Za-z]{1,3}(?![\\p{L}\\p{N}_.?\\\\(]))",
+          "name": "constant.other.reference.column.xln"
+        },
+        {
+          "match": "(?<=:|:\\.)\\$?[A-Za-z]{1,3}(?![\\p{L}\\p{N}_.?\\\\(!])",
+          "name": "constant.other.reference.column.xln"
+        },
+        {
+          "match": "(?<![\\p{L}\\p{N}_.?\\\\$])\\$?[0-9]{1,7}(?=\\.?:\\.?\\$?[0-9]{1,7}(?![\\p{L}\\p{N}_.]))",
+          "name": "constant.other.reference.row.xln"
+        },
+        {
+          "match": "(?<=:|:\\.)\\$?[0-9]{1,7}(?![\\p{L}\\p{N}_.])",
+          "name": "constant.other.reference.row.xln"
+        },
+        { "match": "\\.:\\.|\\.:|:\\.", "name": "keyword.operator.range.trim.xln" },
+        { "match": ":", "name": "keyword.operator.range.xln" }
+      ]
+    },
+
+    "structured-reference": {
+      "comment": "Table[Column], Table[[#Headers],[A]:[B]], [@Column] inside a Table.",
+      "name": "meta.structured-reference.xln",
+      "begin": "([\\p{L}_\\\\][\\p{L}\\p{N}_.\\\\]*)?(\\[)",
+      "beginCaptures": {
+        "1": { "name": "entity.name.type.table.xln" },
+        "2": { "name": "punctuation.definition.structured-reference.begin.xln" }
+      },
+      "end": "\\]",
+      "endCaptures": { "0": { "name": "punctuation.definition.structured-reference.end.xln" } },
+      "patterns": [{ "include": "#structured-inner" }]
+    },
+
+    "structured-inner": {
+      "patterns": [
+        { "match": "(?i)#(?:All|Data|Headers|Totals|This Row)", "name": "support.constant.structured-reference.xln" },
+        { "match": "'[\\[\\]#'@]", "name": "constant.character.escape.xln" },
+        { "match": "@", "name": "keyword.operator.this-row.xln" },
+        { "match": ",", "name": "punctuation.separator.structured-reference.xln" },
+        { "match": ":", "name": "keyword.operator.range.xln" },
+        {
+          "begin": "\\[",
+          "end": "\\]",
+          "beginCaptures": { "0": { "name": "punctuation.definition.structured-reference.begin.xln" } },
+          "endCaptures": { "0": { "name": "punctuation.definition.structured-reference.end.xln" } },
+          "patterns": [{ "include": "#structured-inner" }]
+        },
+        { "match": "[^\\[\\]#'@,:]+", "name": "variable.other.member.column.xln" }
+      ]
+    },
+
+    "spill": {
+      "comment": "The spill operator after a reference or a name: $C$10#, Revenue#.",
+      "match": "(?<=[\\p{L}\\p{N}_)\\]$?\\\\])#",
+      "name": "keyword.operator.spill.xln"
+    },
+
+    "lambda-let": {
+      "match": "(?i)((?:_xlfn\\.)?)(LAMBDA|LET)(?=\\s*\\()",
+      "captures": {
+        "1": { "name": "storage.modifier.prefix.xln" },
+        "2": { "name": "storage.type.function.xln" }
+      }
+    },
+
+    "function-call": {
+      "comment": "Any name followed by '(' : built-in functions and LAMBDA names alike. Stored prefixes are dimmed apart.",
+      "match": "((?:_xlfn\\.|_xlws\\.|_xludf\\.|_xleta\\.)*)([\\p{L}_\\\\][\\p{L}\\p{N}_.?\\\\]*)(?=\\s*\\()",
+      "captures": {
+        "1": { "name": "storage.modifier.prefix.xln" },
+        "2": { "name": "support.function.xln" }
+      }
+    },
+
+    "parameter": {
+      "comment": "LAMBDA/LET parameters in stored form.",
+      "match": "(_xlpm\\.)([\\p{L}_\\\\][\\p{L}\\p{N}_.?\\\\]*)",
+      "captures": {
+        "1": { "name": "storage.modifier.prefix.xln" },
+        "2": { "name": "variable.parameter.xln" }
+      }
+    },
+
+    "boolean": {
+      "match": "(?i)(?<![\\p{L}\\p{N}_.?\\\\])(?:TRUE|FALSE)(?![\\p{L}\\p{N}_.?\\\\(])",
+      "name": "constant.language.boolean.xln"
+    },
+
+    "number": {
+      "match": "(?<![\\p{L}\\p{N}_.?\\\\$])(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?",
+      "name": "constant.numeric.xln"
+    },
+
+    "name": {
+      "comment": "A defined name, a LET/LAMBDA variable, or Module.name.",
+      "match": "((?:[\\p{L}_\\\\][\\p{L}\\p{N}_?\\\\]*\\.)*)([\\p{L}_\\\\][\\p{L}\\p{N}_?\\\\]*)",
+      "captures": {
+        "1": { "name": "entity.name.namespace.module.xln" },
+        "2": { "name": "variable.other.name.xln" }
+      }
+    },
+
+    "operator": {
+      "patterns": [
+        { "match": "<>|<=|>=|=|<|>", "name": "keyword.operator.comparison.xln" },
+        { "match": "&", "name": "keyword.operator.concatenation.xln" },
+        { "match": "%", "name": "keyword.operator.percent.xln" },
+        { "match": "[+\\-*/^]", "name": "keyword.operator.arithmetic.xln" },
+        { "match": "@", "name": "keyword.operator.implicit-intersection.xln" },
+        { "match": ",", "name": "punctuation.separator.comma.xln" }
+      ]
+    },
+
+    "parens": {
+      "begin": "\\(",
+      "end": "\\)",
+      "beginCaptures": { "0": { "name": "punctuation.parenthesis.begin.xln" } },
+      "endCaptures": { "0": { "name": "punctuation.parenthesis.end.xln" } },
+      "patterns": [{ "include": "#formula" }]
+    }
+  }
+}
