@@ -2,7 +2,8 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { readWorkbook, type CellFormula, type Sheet, type WorkbookSnapshot } from "../../src/file/index.js";
-import { renderFormulaView, sheetFormulaView, shortValue } from "../../src/view/index.js";
+import { renderFormulaView, sheetFormulaView, shortValue, UNCALCULATED } from "../../src/view/index.js";
+import { applyChangeSet, audit } from "../../src/index.js";
 
 const RESULTS = join(import.meta.dirname, "..", "..", "..", "..", "probes", "results");
 const f7 = readWorkbook(new Uint8Array(readFileSync(join(RESULTS, "f7_base.xlsx"))));
@@ -246,5 +247,38 @@ describe("left-hand side: the defined names on a line's location", () => {
     ]);
     expect(sheetFormulaView(f7, "S1").filter((l) => l.lhs.length > 0).map((l) => l.cell)).toEqual(["E1"]);
     expect(sheetFormulaView(f7, "S2").every((l) => l.lhs.length === 0)).toBe(true);
+  });
+});
+
+describe("a formula a build wrote: not calculated since (FEEDBACK 2026-10-08)", () => {
+  // The build drops the cell's <v> and sets fullCalcOnLoad="1"; Excel drops the flag when
+  // it saves (probe F06). Until then the formula has no value, and a spill no known extent.
+  const bytes = new Uint8Array(readFileSync(join(RESULTS, "f7_base.xlsx")));
+  const built = readWorkbook(applyChangeSet(bytes, [{ op: "set-cell-formula", sheet: "S1", range: "E1", stored: "_xlfn.SEQUENCE(4)*Rate", display: "SEQUENCE(4)*Rate" }]));
+  const lines = sheetFormulaView(built, "S1");
+  const at = (cell: string) => lines.find((l) => l.cell === cell)!;
+
+  it("is marked uncalculated, with no value; the other formulas keep theirs", () => {
+    expect(f7.fullCalcOnLoad).toBeUndefined();
+    expect(built.fullCalcOnLoad).toBe(true);
+    expect(at("E1")).toMatchObject({ kind: "dynamic-array", formula: "SEQUENCE(4)*Rate", uncalculated: true, valueText: undefined });
+    expect(at("E1").value).toBeUndefined();
+    expect(at("B4")).toMatchObject({ valueText: "0.3" });
+    expect(at("B4").uncalculated).toBeUndefined();
+    expect(sheetFormulaView(f7, "S1").some((l) => l.uncalculated)).toBe(false);
+  });
+
+  it("reads so in the text view, a spill without a size", () => {
+    const text = renderFormulaView(lines, { sheet: "S1" }).text;
+    const e1 = text.split("\n").find((l) => l.includes("E1#"))!;
+    expect(e1).toContain("(spill)");
+    expect(e1).toContain(`→ ${UNCALCULATED}`);
+  });
+
+  it("the spill census counts it apart instead of dropping it", () => {
+    const census = audit(built, { workbook: "built.xlsx" }).spills;
+    expect(census.uncalculated).toBe(1);
+    expect(census.spills.some((s) => s.anchor === "E1")).toBe(false);
+    expect(audit(f7, { workbook: "f7.xlsx" }).spills.uncalculated).toBe(0);
   });
 });

@@ -7,7 +7,7 @@ import { basename, join } from "node:path";
 import { Client } from "@modelcontextprotocol/client";
 import { InMemoryTransport } from "@modelcontextprotocol/server";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { check } from "@xln/cli";
+import { check, formulas, graphSummary } from "@xln/cli";
 import { createServer } from "../src/server.js";
 
 const CORPUS = process.env["XLN_CORPUS"];
@@ -72,6 +72,44 @@ describe.skipIf(!CORPUS)("xln-mcp on the corpus (XLN_CORPUS)", () => {
       const changes = (plan.structuredContent!["changeSet"] as { changes: { op: string; fields?: string[] }[] }).changes;
       const edits = changes.filter((ch) => ch.op !== "set-embedded-source" && !(ch.op === "set-name" && (ch.fields ?? []).every((f) => f === "comment" || f === "provenance")));
       expect(edits, `${name}: ${plan.content[0]!.text}`).toEqual([]);
+    }
+  });
+
+  it("formulas: the default page stays small; graph and verify agree with the CLI", { timeout: 600_000 }, async () => {
+    for (const src of workbooks(CORPUS!)) {
+      const name = basename(src);
+      const wb = join(root, name);
+      copyFileSync(src, wb);
+      const total = formulas({ workbook: wb, json: true }).sheets.reduce((n, s) => n + s.lines.length, 0);
+      for (const args of [{}, { order: "calculation" }, { workbookWide: true }]) {
+        const f = await call("xln_formulas", { workbook: name, ...args });
+        expect(f.isError, name).toBeFalsy();
+        expect(f.structuredContent!["total"], name).toBe(total);
+        expect(f.structuredContent!["returned"], name).toBe(Math.min(50, total));
+        // Everything the agent receives: the summary, the JSON block and the structured result (the full view runs to 900 kB on lbo-ep03r).
+        const size = f.content.reduce((n, c) => n + (c.text ?? "").length, 0) + JSON.stringify(f.structuredContent).length;
+        expect(size, `${name} ${JSON.stringify(args)}`).toBeLessThan(80_000);
+      }
+
+      const g = await call("xln_graph", { workbook: name });
+      expect(g.isError, name).toBeFalsy();
+      const s = graphSummary({ workbook: wb, json: true }).summary;
+      expect(g.structuredContent!["totals"], name).toEqual({
+        cycles: s.cycles.length,
+        recursions: s.recursions.length,
+        flagged: s.flagged.length,
+        spillRefs: s.spillRefs.length,
+        unusedNames: s.unusedNames.length,
+        usedOnlyByUnusedNames: s.usedOnlyByUnusedNames.length,
+        nameCycles: s.nameCycles.length,
+      });
+      expect(g.structuredContent!["edges"], name).toBe(s.edges);
+
+      // A workbook against a copy of itself: no cell changed.
+      copyFileSync(src, join(root, "same-" + name));
+      const v = await call("xln_verify", { workbook: name, before: "same-" + name });
+      expect(v.isError, name).toBeFalsy();
+      expect(v.structuredContent!["verdict"], name).toBe("same");
     }
   });
 });

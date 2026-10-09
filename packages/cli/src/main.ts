@@ -51,9 +51,29 @@ import { aroundExcel, reopenText, type ReopenReport } from "./reopen.js";
 import { mainLib, projectWorkbook, readProjectFiles } from "./lib.js";
 import { renameJson, renameText, runRename, type RenameCommand, type RenameOutcome } from "./rename.js";
 
-export { runBuild, runVerify, buildJson, buildText, readProjectTree, type BuildCommand, type BuildOutcome, type VerifyCommand } from "./build.js";
+export { runBuild, runVerify, verifyText, buildJson, buildText, readProjectTree, type BuildCommand, type BuildOutcome, type VerifyCommand } from "./build.js";
 // For in-process callers (the MCP server): the same functions the commands run.
-export { runLibStatus, type LibStatusCommand } from "./lib.js";
+export {
+  runLibStatus,
+  runLibPublish,
+  runLibTake,
+  runLibBase,
+  libPublishText,
+  libTakeText,
+  libBaseText,
+  libPublishJson,
+  libTakeJson,
+  libBaseJson,
+  libBaseRefused,
+  libraryDir,
+  projectWorkbook,
+  readProjectFiles,
+  type LibStatusCommand,
+  type LibPublishCommand,
+  type LibTakeCommand,
+  type LibBaseCommand,
+} from "./lib.js";
+export { runRename, renameText, renameJson, type RenameCommand, type RenameOutcome } from "./rename.js";
 
 export interface Io {
   out: (s: string) => void;
@@ -96,13 +116,16 @@ const USAGE = `usage: xln pull <workbook.xlsx> [--out <dir>] [--json] [--width <
 
   formulas  Print the cell formulas of each sheet in order of appearance (row by row):
             the names defined as the cell (or its spill), address, kind, formula as Excel
-            shows it, saved value. The workbook is only read.
+            shows it, saved value. A formula a build wrote that Excel has not calculated
+            since (no saved value, the file still asks Excel to recalculate on open)
+            reads "(not calculated since the build)". The workbook is only read.
     --sheet   only this sheet
     --order   calculation: each formula after what it reads (inputs first), with its
               level and circular references marked (default: appearance)
     --workbook  all sheets in one list, in calculation order (dependencies cross sheets)
     --json    print the lines as JSON (names on the cell as lhs; names used, with their
-              spans in the formula; in calculation order also level, cycle, dependsOn)
+              spans in the formula; in calculation order also level, cycle, dependsOn;
+              uncalculated: true, and no value, for a formula not calculated since a build)
 
   graph     Summarise the cell dependency graph: nodes by kind, edges, circular
             references, references that cannot be followed (INDIRECT, computed OFFSET,
@@ -153,7 +176,8 @@ const USAGE = `usage: xln pull <workbook.xlsx> [--out <dir>] [--json] [--width <
             open; 4 read-back failed (nothing written, or the original restored).
     --project  project folder (default <workbook>.xln)
     --out      write the built workbook to this file instead (the lockfile is not updated)
-    --dry-run  print the change set without writing
+    --dry-run  print the change set without writing (updates of a module name's
+               provenance tag alone are one line; --json lists each)
     --force    write even when nothing changed (sets fullCalcOnLoad)
     --embed    embed the project source in the workbook: names/**/*.xln, the lockfile
                and the config in a custom XML part, an archive copy for a workbook

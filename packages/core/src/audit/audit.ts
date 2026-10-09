@@ -569,10 +569,15 @@ function spillCensus(wb: WorkbookSnapshot, graph: DependencyGraph, defs: readonl
   }
   const spills: SpillEntry[] = [];
   let singleCell = 0;
+  let uncalculated = 0;
   const bySheet = new Map<string, SpillCensus["bySheet"][number]>();
   for (const n of graph.nodes) {
     if (n.kind !== "formula" || n.line!.kind !== "dynamic-array") continue;
     const l = n.line!;
+    if (l.uncalculated) {
+      uncalculated++;
+      continue;
+    }
     const rows = l.rows ?? 1;
     const cols = l.cols ?? 1;
     if (rows * cols <= 1) {
@@ -591,7 +596,7 @@ function spillCensus(wb: WorkbookSnapshot, graph: DependencyGraph, defs: readonl
   const pos = new Map(wb.sheets.map((s) => [s.name, s.position]));
   const ord = (sheet: string) => pos.get(sheet) ?? 0;
   spills.sort((a, b) => ord(a.sheet) - ord(b.sheet) || cellOrder(a.anchor, b.anchor));
-  return { spills, singleCell, bySheet: [...bySheet.values()].sort((a, b) => ord(a.sheet) - ord(b.sheet)) };
+  return { spills, singleCell, uncalculated, bySheet: [...bySheet.values()].sort((a, b) => ord(a.sheet) - ord(b.sheet)) };
 }
 
 function cellOrder(a: string, b: string): number {

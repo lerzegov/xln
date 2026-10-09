@@ -5,7 +5,7 @@ Excel workbook, turns its defined names and LAMBDA functions into a text project
 VS Code, audits them, and writes edits back into the file. It works with no add-in, no
 macros and no running Excel, on macOS and Windows.
 
-Status: **0.1.1** (first public release 0.1.0, 2026-10-08). The whole loop works: pull a
+Status: **0.1.2** (first public release 0.1.0, 2026-10-08). The whole loop works: pull a
 workbook's names into text, edit and check them in VS Code (desktop or vscode.dev), audit
 the workbook, build the names and cell formulas back into the file; plus a LAMBDA library
 across workbooks, a command line (`xln`) and an MCP server for agents.

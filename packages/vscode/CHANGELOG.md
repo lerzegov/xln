@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.1.2 (2026-10-09)
+
+- Pulling twice in a row no longer refuses on a sheet name over a deleted reference: the
+  pull now writes it with its sheet (`IS!#REF!#`), so the second pull finds no edits.
+  A project pulled with 0.1.1 that has such a line refuses its next pull once: pull with
+  *Discard and pull*, or add the sheet by hand.
+- The build plan shows updates of the provenance tag alone as one line ("update the
+  provenance tag of 22 module names (comment only)") instead of one line per name.
+- The formula view shows a cell the build wrote, and Excel has not calculated since, as
+  "not calculated since the build" instead of an empty value; its hover says to open and
+  save the workbook in Excel. The spill census counts such cells apart.
+- *Audit workbook*: a spill (`x#`) of a deleted reference reads "#REF!: the reference was
+  deleted".
+
 ## 0.1.1 (2026-10-08)
 
 - *Build and reopen in Excel* opens the workbook in Excel when there is nothing to

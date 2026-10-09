@@ -7,7 +7,7 @@ import { Client } from "@modelcontextprotocol/client";
 import { InMemoryTransport } from "@modelcontextprotocol/server";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { readWorkbook } from "@xln/core";
-import { check } from "@xln/cli";
+import { check, formulas, graphSummary } from "@xln/cli";
 import { createServer } from "../src/server.js";
 import { parseArgs } from "../src/main.js";
 
@@ -49,12 +49,28 @@ afterAll(async () => {
 });
 
 describe("xln-mcp", () => {
-  it("lists six tools; only pull and build write, and build needs confirm", async () => {
+  it("lists thirteen tools; seven only read, build needs confirm, publish is destructive", async () => {
     const { tools } = await client.listTools();
-    expect(tools.map((t) => t.name).sort()).toEqual(["xln_build", "xln_build_plan", "xln_check", "xln_lib_status", "xln_names", "xln_pull"]);
+    expect(tools.map((t) => t.name).sort()).toEqual([
+      "xln_build",
+      "xln_build_plan",
+      "xln_check",
+      "xln_formulas",
+      "xln_graph",
+      "xln_lib_base",
+      "xln_lib_publish",
+      "xln_lib_status",
+      "xln_lib_take",
+      "xln_names",
+      "xln_pull",
+      "xln_rename",
+      "xln_verify",
+    ]);
     const by = Object.fromEntries(tools.map((t) => [t.name, t]));
-    for (const n of ["xln_check", "xln_names", "xln_build_plan", "xln_lib_status"]) expect(by[n]!.annotations?.readOnlyHint, n).toBe(true);
+    const readOnly = ["xln_check", "xln_names", "xln_build_plan", "xln_lib_status", "xln_formulas", "xln_graph", "xln_verify"];
+    for (const t of tools) expect(t.annotations?.readOnlyHint, t.name).toBe(readOnly.includes(t.name));
     expect(by["xln_build"]!.annotations?.destructiveHint).toBe(true);
+    expect(by["xln_lib_publish"]!.annotations?.destructiveHint).toBe(true);
     expect(by["xln_build"]!.inputSchema.required).toEqual(expect.arrayContaining(["workbook", "confirm"]));
   });
 
@@ -296,6 +312,214 @@ describe("xln-mcp", () => {
     const none = await call("xln_lib_status", { path: "lib.xlsx" });
     expect(none.isError).toBe(true);
     expect(text(none)).toContain("no library: pass --lib <dir>");
+  });
+
+  it("xln_formulas: the formula view, compact and paged, filtered by sheet, query and names", async () => {
+    const wb = copy("f7_base.xlsx", "formulas.xlsx");
+    const cli = formulas({ workbook: wb, json: true });
+    const all = cli.sheets.flatMap((s) => s.lines);
+    const r = await call("xln_formulas", { workbook: "formulas.xlsx" });
+    expect(r.isError, text(r)).toBeFalsy();
+    const s = r.structuredContent!;
+    expect(s["total"]).toBe(28);
+    expect(s["sheets"]).toEqual({ S1: 22, S2: 6 });
+    expect(s["order"]).toBe("appearance");
+    const rows = s["lines"] as { sheet: string; cell: string; formula: string; reads: string[]; defines: string[]; value: string | null; extent?: string }[];
+    expect(rows.map((x) => x.formula)).toEqual(all.map((l) => l.formula));
+    expect(rows.find((x) => x.cell === "E1#")).toMatchObject({ sheet: "S1", kind: "dynamic-array", formula: "SEQUENCE(3)*Rate", defines: ["Spl"], extent: "E1:E3", reads: ["Rate"] });
+    expect(text(r)).toContain("xln formulas formulas.xlsx: 28 formulas on 2 sheets (order of appearance, sheet by sheet)");
+    expect(text(r)).toContain("Spl  'S1'!E1# (E1:E3) = SEQUENCE(3)*Rate  → 0.1");
+
+    const page = await call("xln_formulas", { workbook: "formulas.xlsx", limit: 5, offset: 20 });
+    expect(page.structuredContent!["returned"]).toBe(5);
+    expect(text(page)).toContain("showing 21–25 (offset 25 for more)");
+    const s2 = await call("xln_formulas", { workbook: "formulas.xlsx", sheet: "s2" });
+    expect(s2.structuredContent!["total"]).toBe(6);
+    const q = await call("xln_formulas", { workbook: "formulas.xlsx", query: "loc*row" });
+    expect(q.structuredContent!["matched"]).toBe(3);
+    // Names: the formulas that read Loc, the workbook's or S2's (C5 reads both).
+    const loc = await call("xln_formulas", { workbook: "formulas.xlsx", names: ["Loc", "S2!Loc"] });
+    expect((loc.structuredContent!["lines"] as { cell: string }[]).map((x) => x.cell)).toEqual(["C5", "A1", "B1", "A2", "A3", "A4", "A5"]);
+
+    const calc = await call("xln_formulas", { workbook: "formulas.xlsx", workbookWide: true, limit: 100 });
+    expect(calc.structuredContent!["order"]).toBe("calculation");
+    expect((calc.structuredContent!["lines"] as { level?: number }[]).every((x) => typeof x.level === "number")).toBe(true);
+    const full = await call("xln_formulas", { workbook: "formulas.xlsx", detail: "full", limit: 1 });
+    expect(full.structuredContent!["lines"]).toEqual(JSON.parse(JSON.stringify(all.slice(0, 1))));
+
+    const both = await call("xln_formulas", { workbook: "formulas.xlsx", workbookWide: true, sheet: "S1" });
+    expect(both.isError).toBe(true);
+    expect(text(both)).toContain("exclude each other");
+    const noSheet = await call("xln_formulas", { workbook: "formulas.xlsx", sheet: "Nope" });
+    expect(noSheet.isError).toBe(true);
+    expect(text(noSheet)).toContain("no sheet 'Nope'; the workbook has S1, S2");
+  });
+
+  it("xln_graph: the dependency summary of xln graph --json", async () => {
+    const wb = copy("f7_base.xlsx", "graph.xlsx");
+    const r = await call("xln_graph", { workbook: "graph.xlsx" });
+    expect(r.isError, text(r)).toBeFalsy();
+    const { buildMs: _a, ...want } = graphSummary({ workbook: wb, json: true }).summary;
+    const { buildMs: _b, totals, ok, ...got } = r.structuredContent! as Record<string, unknown>;
+    expect(got).toEqual(JSON.parse(JSON.stringify(want)));
+    expect(ok).toBe(true);
+    expect((totals as Record<string, number>)["flagged"]).toBe(1);
+    expect(text(r)).toContain("not followed: 1 dynamic, 0 external, 0 broken");
+    const away = join(outside, "g.xlsx");
+    copyFileSync(join(RESULTS, "f7_base.xlsx"), away);
+    expect(text(await call("xln_graph", { workbook: away }))).toMatch(/outside the allowed roots/);
+  });
+
+  it("xln_verify compares saved values with the backup or a given copy", async () => {
+    copy("f7_base.xlsx", "ver.xlsx");
+    const none = await call("xln_verify", { workbook: "ver.xlsx" });
+    expect(none.isError).toBe(true);
+    expect(text(none)).toContain(`no copy before the build at ${join(root, "ver.backup.xlsx")}: pass before: <file>`);
+    copy("f7_base.xlsx", "ver.backup.xlsx");
+    const same = await call("xln_verify", { workbook: "ver.xlsx" });
+    expect(same.isError, text(same)).toBeFalsy();
+    expect(same.structuredContent!["verdict"]).toBe("same");
+    expect(same.structuredContent!["changedTotal"]).toBe(0);
+    expect(same.content[0]!.text).toBe("xln verify ver.xlsx against ver.backup.xlsx: 40 cells on 2 sheets, 0 changed");
+
+    copy("f8_base.xlsx", "v8-before.xlsx");
+    copy("f8_p1_resaved.xlsx", "v8.xlsx");
+    const changed = await call("xln_verify", { workbook: "v8.xlsx", before: "v8-before.xlsx", maxChanges: 10 });
+    expect(changed.isError).toBeFalsy();
+    const c = changed.structuredContent!;
+    expect(c["verdict"]).toBe("changed");
+    expect(c["ok"]).toBe(false);
+    expect(c["changedTotal"]).toBe(46);
+    expect((c["changed"] as unknown[]).length).toBe(10);
+    expect((c["changed"] as unknown[])[0]).toEqual({ sheet: "N", cell: "B1", before: 6, after: 600 });
+    expect(text(changed)).toContain("46 changed\n  N!B1: 6 → 600");
+
+    const away = join(outside, "before.xlsx");
+    copyFileSync(join(RESULTS, "f8_base.xlsx"), away);
+    expect(text(await call("xln_verify", { workbook: "v8.xlsx", before: away }))).toMatch(/outside the allowed roots/);
+  });
+
+  it("xln_rename: a dry run lists every edit, a rename writes only the source; the build plan renames", async () => {
+    const wb = copy("f7_base.xlsx", "rn.xlsx");
+    const bytes = readFileSync(wb);
+    expect((await call("xln_pull", { workbook: "rn.xlsx" })).isError).toBeFalsy();
+    const files = ["names/_unmanaged.xln", "names/sheets/S1.xln", "names/sheets/S2.xln"].map((f) => join(root, "rn.xln", ...f.split("/")));
+    const before = files.map((f) => readFileSync(f, "utf8"));
+
+    const dry = await call("xln_rename", { path: "rn.xln", name: "Rate", to: "Pace", dryRun: true });
+    expect(dry.isError, text(dry)).toBeFalsy();
+    expect(files.map((f) => readFileSync(f, "utf8"))).toEqual(before);
+    expect(text(dry)).toContain("xln rename Rate → Pace in rn.xln (dry run: nothing written)");
+    expect(text(dry)).toContain("dry run: nothing written; call again without dryRun");
+    const edits = dry.structuredContent!["edits"] as { path: string; label: string; line: number; was: string; text: string }[];
+    expect(edits.find((e) => e.label === "name")).toMatchObject({ path: "names/_unmanaged.xln", was: "Rate", text: "Pace", line: before[0]!.split("\n").indexOf("Rate = 0.1;") + 1 });
+    expect(edits.filter((e) => e.label === "reference").every((e) => e.was === "Rate" && e.text === "Pace")).toBe(true);
+    expect(dry.structuredContent!["written"]).toEqual([]);
+
+    // The workbook form names the project beside it; the workbook is only read.
+    const real = await call("xln_rename", { path: "rn.xlsx", name: "Rate", to: "Pace" });
+    expect(real.isError, text(real)).toBeFalsy();
+    expect(real.structuredContent!["written"]).toEqual(expect.arrayContaining(["names/_unmanaged.xln", "names/sheets/S1.xln"]));
+    expect(readFileSync(files[0]!, "utf8")).toContain("@renamed(Rate)\nPace = 0.1;");
+    expect(readFileSync(wb).equals(bytes)).toBe(true);
+    const plan = await call("xln_build_plan", { workbook: "rn.xlsx" });
+    const changes = (plan.structuredContent!["changeSet"] as { changes: { op: string; to?: string }[] }).changes;
+    expect(changes.some((c) => c.op === "rename-name" && c.to === "Pace")).toBe(true);
+
+    const taken = await call("xln_rename", { path: "rn.xln", name: "Pace", to: "Loc" });
+    expect(taken.isError).toBe(true);
+    expect(text(taken)).toMatch(/^xln rename Pace → Loc in rn\.xln: /);
+    const missing = await call("xln_rename", { path: "rn.xln", name: "Nope", to: "Other" });
+    expect(missing.isError).toBe(true);
+    expect(text(missing)).toContain("no name Nope in the project");
+    const away = await call("xln_rename", { path: join(outside, "p.xln"), name: "A", to: "B" });
+    expect(text(away)).toMatch(/outside the allowed roots/);
+  });
+
+  it("xln_lib_take refuses a copy with (possibly) its own edit unless discard: true; xln_lib_base records a base", async () => {
+    copy("probe_win.xlsx", "lt.xlsx");
+    expect((await call("xln_pull", { workbook: "lt.xlsx" })).isError).toBeFalsy();
+    const project = join(root, "lt.xln");
+    const fn = join(project, "names", "FN.xln");
+    writeFileSync(fn, "/** Doubles. */\nFN.TWICE = LAMBDA(x, x * 2);\n\nFN.INC = LAMBDA(x, x + 1);\n");
+    const lib = join(root, "ltlib");
+    mkdirSync(lib);
+    writeFileSync(join(lib, "FN.TWICE.lambda"), "# name       FN.TWICE\n# summary    Doubles.\n# params     x\n\nLAMBDA(x, x * 2)\n");
+    writeFileSync(join(lib, "FN.INC.lambda"), "# name       FN.INC\n# summary    Adds two.\n# params     x\n\nLAMBDA(x, x + 2)\n");
+    const cfg = join(project, "xln.config.json");
+    writeFileSync(cfg, JSON.stringify({ ...JSON.parse(readFileSync(cfg, "utf8")), library: "../ltlib" }));
+    const text0 = readFileSync(fn, "utf8");
+
+    const refused = await call("xln_lib_take", { project: "lt.xln", name: "FN.INC" });
+    expect(refused.isError).toBe(true);
+    expect(text(refused)).toContain("refused: FN.INC records no library base");
+    expect(text(refused)).toContain("Call again with discard: true (only when the user agrees)");
+    expect(refused.structuredContent!["refused"]).toBeDefined();
+    expect(readFileSync(fn, "utf8")).toBe(text0);
+
+    const dry = await call("xln_lib_take", { project: "lt.xln", name: "FN.INC", discard: true, dryRun: true });
+    expect(dry.isError, text(dry)).toBeFalsy();
+    expect(dry.structuredContent!["written"]).toBe(false);
+    expect(readFileSync(fn, "utf8")).toBe(text0);
+    const taken = await call("xln_lib_take", { project: "lt.xln", name: "FN.INC", discard: true });
+    expect(taken.isError, text(taken)).toBeFalsy();
+    expect(taken.structuredContent!["written"]).toBe(true);
+    expect(readFileSync(fn, "utf8")).toMatch(/@from\(lib #[0-9a-f]{6}\)/);
+    expect(readFileSync(fn, "utf8")).toContain("LAMBDA(x, x + 2)");
+
+    // FN.TWICE is identical without a base: record it; a second time there is nothing to record.
+    const base = await call("xln_lib_base", { project: "lt.xln", name: "FN.TWICE" });
+    expect(base.isError, text(base)).toBeFalsy();
+    expect((base.structuredContent!["recorded"] as { name: string }[]).map((x) => x.name)).toEqual(["FN.TWICE"]);
+    const again = await call("xln_lib_base", { project: "lt.xln", name: "FN.TWICE" });
+    expect(again.isError).toBe(true);
+    expect(text(again)).toContain("xln lib base FN.TWICE: nothing to record");
+    const both = await call("xln_lib_base", { project: "lt.xln", name: "FN.TWICE", all: true });
+    expect(text(both)).toContain("a name or all: true");
+    const status = await call("xln_lib_status", { path: "lt.xln" });
+    expect((status.structuredContent!["counts"] as Record<string, number>)["identical"]).toBe(2);
+  });
+
+  it("xln_lib_publish: a dry run shows the diff, a write needs confirm, and the library must lie under a root", async () => {
+    copy("probe_win.xlsx", "lp.xlsx");
+    expect((await call("xln_pull", { workbook: "lp.xlsx" })).isError).toBeFalsy();
+    const project = join(root, "lp.xln");
+    writeFileSync(join(project, "names", "FN.xln"), "/** Halves. */\nFN.HALF = LAMBDA(x, x / 2);\n");
+    const lib = join(root, "lplib");
+    mkdirSync(lib);
+    const file = join(lib, "FN.HALF.lambda");
+
+    const dry = await call("xln_lib_publish", { project: "lp.xln", name: "FN.HALF", lib: "lplib", dryRun: true });
+    expect(dry.isError, text(dry)).toBeFalsy();
+    expect(text(dry)).toContain(`xln lib publish FN.HALF --dry-run: would create ${file}`);
+    expect(dry.structuredContent!["written"]).toBe(false);
+    expect(existsSync(file)).toBe(false);
+    const noConfirm = await call("xln_lib_publish", { project: "lp.xln", name: "FN.HALF", lib: "lplib" });
+    expect(noConfirm.isError).toBe(true);
+    expect(text(noConfirm)).toContain("pass confirm: true once they approve");
+    expect(existsSync(file)).toBe(false);
+    const pub = await call("xln_lib_publish", { project: "lp.xln", name: "FN.HALF", lib: "lplib", confirm: true });
+    expect(pub.isError, text(pub)).toBeFalsy();
+    expect(readFileSync(file, "utf8")).toContain("LAMBDA(x, x / 2)");
+    expect(readFileSync(join(project, "names", "FN.xln"), "utf8")).toMatch(/@from\(lib #[0-9a-f]{6}\)/);
+
+    // A library outside the roots, named in the config or reached through a link: read, never written.
+    const away = join(outside, "lib");
+    mkdirSync(away);
+    const cfg = join(project, "xln.config.json");
+    writeFileSync(cfg, JSON.stringify({ ...JSON.parse(readFileSync(cfg, "utf8")), library: away }));
+    const status = await call("xln_lib_status", { path: "lp.xln" });
+    expect(status.isError, text(status)).toBeFalsy();
+    for (const args of [{}, { dryRun: true }, { confirm: true }]) {
+      const r = await call("xln_lib_publish", { project: "lp.xln", name: "FN.HALF", ...args });
+      expect(r.isError).toBe(true);
+      expect(text(r)).toBe(`the library folder ${away} is outside the allowed roots: xln_lib_publish writes into it, so it must lie under a --root (reading a library elsewhere stays allowed)`);
+    }
+    symlinkSync(away, join(root, "liblink"));
+    const linked = await call("xln_lib_publish", { project: "lp.xln", name: "FN.HALF", lib: "liblink", confirm: true });
+    expect(linked.isError).toBe(true);
+    expect(text(linked)).toMatch(/outside the allowed roots/);
+    expect(existsSync(join(away, "FN.HALF.lambda"))).toBe(false);
   });
 
   it("parses --root", () => {

@@ -1,8 +1,8 @@
 // The pull's guard (decided 2026-10-06): every pull is fresh, so before it replaces the
 // project it lists the source edits not built yet, as the build sees them.
 import { describe, expect, it } from "vitest";
-import { applyChangeSet, formatUnbuiltEdit, LOCK_FILE, pullProject, rewrittenFiles, unbuiltEdits } from "../../src/index.js";
-import { build, edit, fixture } from "./helpers.js";
+import { applyChangeSet, audit, formatUnbuiltEdit, readWorkbook, LOCK_FILE, pullProject, rewrittenFiles, unbuiltEdits } from "../../src/index.js";
+import { build, edit, fixture, withWorkbookXml, workbookXml } from "./helpers.js";
 
 const F7 = fixture("f7_base.xlsx");
 const S1 = "names/sheets/S1.xln";
@@ -78,6 +78,39 @@ describe("unbuiltEdits", () => {
     edit(files, S1, "@C8 = Rate*3;", "@C8 = Rate*4;");
     const r = build(F7, files);
     expect(guard({ ...files, ...r.files }, r.bytes!)).toEqual([]);
+  });
+});
+
+describe("a pull's own output is no edit: deleted references on the name's own sheet (FEEDBACK 2026-10-08)", () => {
+  // `IS!Sales_copy_payout` stored `_xlfn.ANCHORARRAY(IS!#REF!)` was pulled `#REF!#`, which
+  // compiles to `_xlfn.ANCHORARRAY(#REF!)`: pull → pull refused on "[repairs a missing prefix]".
+  const broken: [string, string][] = [
+    ["BrokenSpill", "_xlfn.ANCHORARRAY(S1!#REF!)"],
+    ["BrokenAt", "_xlfn.SINGLE(S1!#REF!)"],
+    ["BrokenSum", "SUM(S1!#REF!)"],
+    ["BrokenLet", "_xlfn.LET(_xlpm.x,S1!#REF!,_xlpm.x+1)"],
+    ["BrokenLookup", "_xlfn.XLOOKUP(1,S1!#REF!,S1!$A$1:$A$3)"],
+    ["BrokenOther", "_xlfn.ANCHORARRAY(S2!#REF!)"],
+  ];
+  const xml = workbookXml(F7).replace(
+    "</definedNames>",
+    broken.map(([n, f]) => `<definedName name="${n}" localSheetId="0">${f}</definedName>`).join("") + `<definedName name="BrokenBook">_xlfn.ANCHORARRAY(S1!#REF!)</definedName></definedNames>`,
+  );
+  const wb = withWorkbookXml(F7, xml);
+
+  it("the pull writes the sheet back; a second pull sees no edit; a build plans nothing", () => {
+    const files = project(wb);
+    expect(files[S1]).toContain("BrokenSpill = 'S1'!#REF!#;");
+    expect(files[S1]).toContain("BrokenSum = SUM('S1'!#REF!);");
+    expect(guard(files, wb)).toEqual([]);
+    const r = build(wb, files);
+    expect(r.plan.changeSet.changes).toEqual([]);
+    expect(r.plan.conflicts).toEqual([]);
+  });
+
+  it("the audit calls a spill of a deleted reference #REF!, not a spill of something other than one cell", () => {
+    const rules = audit(readWorkbook(wb), { workbook: "book.xlsx" }).findings.filter((f) => f.where.kind === "name" && f.where.key.includes("BrokenSpill")).map((f) => f.rule);
+    expect(rules).toContain("C4.ref-deleted");
   });
 });
 

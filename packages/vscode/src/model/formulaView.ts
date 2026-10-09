@@ -188,7 +188,8 @@ export function entryHover(doc: FormulaViewDoc, e: RenderedEntry): string {
   };
   const out = [`**${l.sheet}!${l.cell}** · ${kind[l.kind]}`];
   if (l.level !== undefined) out.push(`level ${l.level}${l.cycle !== undefined ? ` · part of circular reference ↻${l.cycle}` : ""}`);
-  if (l.kind === "dynamic-array" && l.extent) out.push(`spilled to \`${l.extent}\` when saved (${l.rows}×${l.cols})`);
+  if (l.uncalculated) out.push(`no value: Excel has not calculated it since the build wrote it${l.kind === "dynamic-array" ? ", so its spill is not known yet" : ""} (open the workbook in Excel and save it)`);
+  else if (l.kind === "dynamic-array" && l.extent) out.push(`spilled to \`${l.extent}\` when saved (${l.rows}×${l.cols})`);
   else if (l.kind === "shared") out.push(`group \`${l.extent ?? "?"}\` (${l.groupSize ?? "?"} cells), text stored in ${l.master ?? "?"}`);
   else if (l.extent && l.extent !== l.cell) out.push(`over \`${l.extent}\``);
   if (l.stored) out.push("stored as:\n```\n" + l.stored + "\n```");

@@ -13,7 +13,7 @@ import { readCellValues } from "./verify.js";
 import { compareNames } from "../project/modules.js";
 import { LOCK_FILE, MANIFEST_FILE, pullProject } from "../project/pull.js";
 import { applyChangeSet, ApplyError } from "./apply.js";
-import { describeChange, scopedKey, type Scope, type SetEmbeddedSource } from "./changes.js";
+import { describeChanges, scopedKey, type Scope, type SetEmbeddedSource } from "./changes.js";
 import { CONFIG_FILE } from "../audit/config.js";
 import { stripProvenance } from "../project/provenance.js";
 import { readEmbeddedSource } from "./embedXml.js";
@@ -339,7 +339,7 @@ export function buildReportLines(r: BuildResult): string[] {
     out.push(...conflicts);
     if (r.plan.changeSet.changes.length) out.push("  the plan, not written:");
   }
-  for (const c of r.plan.changeSet.changes) out.push(`  ${refused ? "  " : ""}${describeChange(c)}`);
+  for (const l of describeChanges(r.plan.changeSet.changes)) out.push(`  ${refused ? "  " : ""}${l}`);
   if (!refused) {
     out.push(...conflicts);
     for (const p of errors) out.push(`  error${problemWhere(p)}: ${p.message}`);

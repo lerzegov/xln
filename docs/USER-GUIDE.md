@@ -163,6 +163,10 @@ arguments of a function as you type its `(`, and underlines mistakes at once.
 
 Right-click the `is-model.xln` folder (or any `.xln` file) → **Build workbook**. A dialog
 lists what will change (`fill IS!C3 (Sales)`, `move Sales to sheet IS`, …). Confirm.
+The first build of a workbook xln has never built also tags each module name's comment
+with where it came from (§8); the plan says that in one line, `update the provenance tag
+of 22 module names (comment only)`, after the real changes (`xln build --dry-run --json`
+lists each).
 
 If the workbook is open in Excel, xln offers **Close in Excel and build**: Excel closes
 it (asking first if you have unsaved changes), xln writes the file, and Excel opens it
@@ -175,6 +179,11 @@ in Excel.
 Look at the numbers. Excel recalculates everything when it opens the file. Then close
 the workbook **without saving** if you want to go on editing in xln, or save it if you
 changed something in Excel.
+
+Until Excel saves the file, the formulas the build wrote have no saved value: the formula
+view shows them `→ (not calculated since the build)`, a spill as `(spill)` without its
+size, and the spill census of `xln check` counts them apart ("1 not calculated since the
+build"). Open the workbook in Excel and save it to see them with their values.
 
 ### Step 6: Again
 
@@ -388,6 +397,13 @@ A problem in a formula you did not touch (it is so in the workbook) is shown as 
 warning: the build leaves that formula as it is. Fix it in xln to have it written. But if
 the formula broke because you renamed, moved or deleted the name it reads, it is an
 error: the build refuses until you change the formula too (or keep the name).
+
+The workbook's own checks (source *xln check*: copy drift C11, unused names, fixed
+references into a spill…) are about the workbook as it is: the panel updates them by
+itself after each pull and each build, about half a second later, without *Audit
+workbook*. A rename shows its copy drift once it is built. After a save in Excel they
+follow at the next edit in a names file (or *xln: Reload*). In the browser a build writes `<name>.xln.xlsx` beside the workbook and the panel
+still checks the original; *Audit workbook* on the copy shows its findings.
 
 ### Renaming a name
 
@@ -721,6 +737,11 @@ B3:C11, and create them again.
 **Why do some formulas show `@C5 = …;` with no name?** Formula cells without a name. You
 can edit their formula too. A row of cells that hold one formula filled across shows once,
 as `@B40:G40 = …;`.
+
+**A name pulls as `Sales_copy = IS!#REF!#;`. Why the sheet?** Its cells were deleted:
+Excel stores `IS!#REF!`, a reference to deleted cells of IS. Without the sheet it would be
+the error value `#REF!`, which Excel stores differently, so xln keeps it as Excel has it.
+The audit reports it (C4); fix the name in the source or in Excel.
 
 **How do I clear a cell's formula?** Leave the right side empty: `Sales @C3 = ;`.
 

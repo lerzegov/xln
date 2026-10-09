@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "type": "module",
-  "description": "xln MCP server: check, list names, pull, build and library status for AI agents, over stdio",
+  "description": "xln MCP server: check, names, formulas, graph, pull, build, verify, rename and the LAMBDA library for AI agents, over stdio",
   "bin": {
     "xln-mcp": "bin/xln-mcp.js"
   },

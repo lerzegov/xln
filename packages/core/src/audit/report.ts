@@ -131,7 +131,7 @@ export function renderAuditReport(r: AuditReport, opts: RenderAuditOptions = {})
   // ---- C9 census -------------------------------------------------------------------------
   const s = r.spills;
   line();
-  line(`== C9 spill census: ${plural(s.spills.length, "dynamic array")} spilled when saved, ${s.singleCell} saved as one cell`);
+  line(`== C9 spill census: ${plural(s.spills.length, "dynamic array")} spilled when saved, ${s.singleCell} saved as one cell${s.uncalculated ? `, ${s.uncalculated} not calculated since the build (open and save in Excel to count them)` : ""}`);
   for (const b of s.bySheet) line(`  ${b.sheet}: ${plural(b.spills, "spill")}: ${b.spillNamed} named as x#, ${b.fixedNamed} named only by a fixed range, ${b.unnamed} unnamed`);
   const notable = s.spills.filter((x) => !x.names.some((m) => m.how === "spill"));
   if (notable.length) {

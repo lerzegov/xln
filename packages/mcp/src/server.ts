@@ -1,10 +1,26 @@
-// xln as an MCP server: six tools over the CLI's own functions. The descriptions are the
+// xln as an MCP server: thirteen tools over the CLI's own functions. The descriptions are the
 // interface an agent reads, so they say when to use each tool and what it will not do.
 
 import { McpServer, type CallToolResult } from "@modelcontextprotocol/server";
 import * as z from "zod";
 import { Roots } from "./paths.js";
-import { buildPlanTool, buildTool, checkTool, libStatusTool, namesTool, pullTool, ToolFailure, type ToolOutput } from "./tools.js";
+import {
+  buildPlanTool,
+  buildTool,
+  checkTool,
+  formulasTool,
+  graphTool,
+  libBaseTool,
+  libPublishTool,
+  libStatusTool,
+  libTakeTool,
+  namesTool,
+  pullTool,
+  renameTool,
+  verifyTool,
+  ToolFailure,
+  type ToolOutput,
+} from "./tools.js";
 
 export { Roots, PathError } from "./paths.js";
 export { ToolFailure, type ToolOutput } from "./tools.js";
@@ -18,7 +34,8 @@ export interface ServerOptions {
 }
 
 const INSTRUCTIONS = `xln treats an Excel workbook's defined names, LAMBDAs and cell formulas as source code, with no Excel running.
-Workflow: xln_check a workbook for a deterministic verdict (run it after anything edits a workbook); xln_pull it into a project folder (names/*.xln text files you can read and edit); edit those files; xln_check the project folder; xln_build_plan to see the change set; show it to the user; xln_build with confirm: true and the plan's planId to write it.
+Workflow: xln_check a workbook for a deterministic verdict (run it after anything edits a workbook); xln_pull it into a project folder (names/*.xln text files you can read and edit); read the model as code with xln_names and xln_formulas (paged; filter by sheet, query or names), and xln_graph for cycles and references that cannot be followed; edit the names files (to rename a name, use xln_rename, not a hand edit: it records the rename and rewrites every reader); xln_check the project folder; xln_build_plan to see the change set; show it to the user; xln_build with confirm: true and the plan's planId to write it. After the user opens the built workbook in Excel and saves it, xln_verify compares its values with the backup: a build meant not to change numbers should show none changed.
+LAMBDA library: xln_lib_status compares with the library; xln_lib_take takes the library's version, xln_lib_base records the base of an identical copy, xln_lib_publish writes a copy into the shared library (dryRun first, then confirm: true once the user approves).
 xln never changes names or scopes on its own, never merges a conflict silently, refuses to write while Excel has the file open, keeps <workbook>.backup.xlsx, and reads every build back.
 Paths are absolute or relative to the first allowed root; paths outside the roots are refused.`;
 
@@ -175,6 +192,160 @@ export function createServer(opts: ServerOptions): McpServer {
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
     async (args) => run(() => libStatusTool(roots, args)),
+  );
+
+  server.registerTool(
+    "xln_formulas",
+    {
+      title: "Read the cell formulas as code",
+      description:
+        "The workbook's cell formulas as a reviewable listing, as `xln formulas --json` gives it: per formula its sheet, cell (C6# for a dynamic array), " +
+        "kind (normal, shared, array, dynamic-array, data-table), saved extent, the names defined as that cell or spill (defines), the formula as Excel " +
+        "displays it, the value saved with the file, the names and cell references it reads. order 'calculation' (or workbookWide: all sheets in one list) " +
+        "adds level (longest chain from the inputs), cycle (circular reference number) and dependsOn. Paged: a big model has hundreds of formulas, so " +
+        "filter with sheet, query (text in the address, formula or defined name) or names (formulas defining or reading them), and page with limit/offset. " +
+        "Use it to read the model before editing it. Reads only.",
+      inputSchema: z.object({
+        workbook: path("Workbook file"),
+        sheet: z.string().optional().describe("Only this sheet"),
+        order: z.enum(["appearance", "calculation"]).optional().describe("Per sheet: row by row (default), or each formula after what it reads"),
+        workbookWide: z.boolean().optional().describe("All sheets as one list in calculation order (`--workbook`); excludes sheet"),
+        query: z.string().optional().describe("Case-insensitive text to find in Sheet!Cell, the formula or a defined name"),
+        names: z.array(z.string()).optional().describe("Only formulas that define or read these names (Name or Sheet!Name, case-insensitive)"),
+        detail: z.enum(["compact", "full"]).optional().describe("'full': each line as the CLI's JSON has it (stored text, spans, value object); default 'compact'"),
+        limit: z.number().int().min(1).max(5000).optional().describe("Formulas returned (default 50)"),
+        offset: z.number().int().min(0).optional().describe("Skip this many matches (paging)"),
+      }),
+      annotations: { readOnlyHint: true, openWorldHint: false },
+    },
+    async (args) => run(() => formulasTool(roots, args)),
+  );
+
+  server.registerTool(
+    "xln_graph",
+    {
+      title: "Dependency summary",
+      description:
+        "The workbook's dependency graph over cells and names, summarised as `xln graph --json` gives it: node and edge counts, longest chain, " +
+        "circular references (members), recursive LAMBDAs (allowed), references that cannot be followed from the file (dynamic: INDIRECT/OFFSET; " +
+        "external; broken), C9 fixed references into a spill (with the x# to use), C10 unused names (and names used only by unused ones), C12 name " +
+        "cycles. Use it to find what to look at before an edit, or why a value cannot be traced. Reads only.",
+      inputSchema: z.object({
+        workbook: path("Workbook file"),
+        maxItems: z.number().int().min(1).max(5000).optional().describe("Items returned per list (default 200; totals are always complete)"),
+      }),
+      annotations: { readOnlyHint: true, openWorldHint: false },
+    },
+    async (args) => run(() => graphTool(roots, args)),
+  );
+
+  server.registerTool(
+    "xln_verify",
+    {
+      title: "Verify a build changed no values",
+      description:
+        "Compare the values saved in two copies of a workbook, cell by cell, as `xln verify --json` does: the copy before a build (default the build's " +
+        "backup <workbook>.backup.xlsx) and the workbook after the user opened the built file in Excel and saved it (Excel recalculates it on open). " +
+        "Every worksheet cell with a saved value counts, formula or not (a spill's cells too); numbers within the relative tolerance (default 0, exact) " +
+        "count as equal, text, booleans and errors must match exactly; sheets on one side only are listed. verdict 'same': no cell changed. " +
+        "warnings say when a side's values were not calculated by Excel (a built file not yet saved in Excel has none), which makes the comparison " +
+        "empty or partial: ask the user to open and save it first. Use it after a build meant not to change numbers (renames, refactors). Reads only.",
+      inputSchema: z.object({
+        workbook: path("The workbook after the build, saved by Excel"),
+        before: z.string().optional().describe("The copy before the build (default <workbook>.backup.xlsx beside it)"),
+        tolerance: z.number().min(0).optional().describe("Relative difference under which numbers count as equal (default 0)"),
+        maxChanges: z.number().int().min(1).max(10000).optional().describe("Changed cells returned (default 200; changedTotal is complete)"),
+      }),
+      annotations: { readOnlyHint: true, openWorldHint: false },
+    },
+    async (args) => run(() => verifyTool(roots, args)),
+  );
+
+  server.registerTool(
+    "xln_rename",
+    {
+      title: "Rename a defined name in the source",
+      description:
+        "Rename a defined name in a project's source, as `xln rename` does: the statement gets the new name with @renamed(Old) above it (the record the " +
+        "build reads; without it a rename is a deletion plus a new name), and every formula in the project's .xln files that reads it is rewritten, token " +
+        "by token (strings, LET/LAMBDA variables and other scopes' names of that spelling untouched). Use it instead of editing names by hand. " +
+        "With the workbook beside the project, it plans the next build first and refuses (nothing written) a rename that build would refuse " +
+        "(a chart or Table column reads the name, the new name would be captured). Writes only the project's names files, like a hand edit; the " +
+        "workbook is only read and changes only through xln_build_plan and xln_build with the user's approval. dryRun: true lists every edit " +
+        "(file, line, old text) without writing.",
+      inputSchema: z.object({
+        path: path("Project folder, or the workbook (its <workbook>.xln beside it)"),
+        name: z.string().min(1).describe("The name: Name, or Sheet!Name for a sheet's local name"),
+        to: z.string().min(1).describe("The new name"),
+        dryRun: z.boolean().optional().describe("List the edits, write nothing (default false)"),
+      }),
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: false, openWorldHint: false },
+    },
+    async (args) => run(() => renameTool(roots, args)),
+  );
+
+  const lib = z.string().optional().describe("Library folder (default: the project's xln.config.json \"library\")");
+
+  server.registerTool(
+    "xln_lib_publish",
+    {
+      title: "Publish a LAMBDA to the library",
+      description:
+        "Write a workbook-scoped LAMBDA of the project into the library folder as <Name>.lambda (created or updated), as `xln lib publish` does, and " +
+        "record in the project that published version as the name's base (@from(lib #hash), its text kept in library-bases/). The library is shared " +
+        "with other workbooks: call it with dryRun: true first, show the user the diff, and only then with confirm: true. Refused when the library " +
+        "folder is not under an allowed root. Writes the library file and the project's names file; never the workbook (build for that).",
+      inputSchema: z.object({
+        project: path("Project folder"),
+        name: z.string().min(1).describe("The LAMBDA's name (workbook-scoped)"),
+        lib,
+        dryRun: z.boolean().optional().describe("Show the diff, write nothing (default false)"),
+        confirm: z.boolean().optional().describe("Must be true to write (not needed with dryRun): the user approved the diff"),
+      }),
+      annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
+    },
+    async (args) => run(() => libPublishTool(roots, args)),
+  );
+
+  server.registerTool(
+    "xln_lib_take",
+    {
+      title: "Take the library's version of a LAMBDA",
+      description:
+        "Replace a LAMBDA in the project's source with the library's version (definition and doc comment) and record it as the base (@from(lib #hash)), " +
+        "as `xln lib take` does. Refused (tool error, nothing written, with the diff) when the copy was edited here (modified, both changed) or records " +
+        "no base so an edit cannot be ruled out (differs); pass discard: true only when the user agrees to lose that edit, or publish it instead. " +
+        "Writes only the project's source; build to carry it into the workbook.",
+      inputSchema: z.object({
+        project: path("Project folder"),
+        name: z.string().min(1).describe("The library function's name"),
+        lib,
+        dryRun: z.boolean().optional().describe("Show the diff, write nothing (default false)"),
+        discard: z.boolean().optional().describe("Take it even though the copy has (or may have) an edit of its own, which is lost. Default false"),
+      }),
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    },
+    async (args) => run(() => libTakeTool(roots, args)),
+  );
+
+  server.registerTool(
+    "xln_lib_base",
+    {
+      title: "Record a LAMBDA's library base",
+      description:
+        "Record @from(lib #hash) on a LAMBDA identical to the library's that records no base yet (all: true for every such one), with the base's text kept " +
+        "in library-bases/, as `xln lib base` does: later status can then tell outdated from modified. Nothing else records a base. Refused for a named " +
+        "function that is not identical or already has a base (the reason given). Writes only the project's source; build to carry it into the workbook.",
+      inputSchema: z.object({
+        project: path("Project folder"),
+        name: z.string().min(1).optional().describe("The function (or all: true)"),
+        all: z.boolean().optional().describe("Every function identical to the library without a base"),
+        lib,
+        dryRun: z.boolean().optional().describe("List what would be recorded, write nothing (default false)"),
+      }),
+      annotations: { readOnlyHint: false, destructiveHint: false, idempotentHint: true, openWorldHint: false },
+    },
+    async (args) => run(() => libBaseTool(roots, args)),
   );
 
   return server;

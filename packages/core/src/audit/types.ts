@@ -109,6 +109,8 @@ export interface SpillCensus {
   spills: SpillEntry[];
   /** Dynamic-array formulas saved as one cell (Excel writes even 1×1 results that way). */
   singleCell: number;
+  /** Dynamic-array formulas a build wrote and Excel has not calculated since (`FormulaViewLine.uncalculated`): their spill is not known, so they are in neither count above. */
+  uncalculated: number;
   /** Per sheet: spills, named through `x#`, named only through a fixed range, unnamed. */
   bySheet: { sheet: string; spills: number; spillNamed: number; fixedNamed: number; unnamed: number }[];
 }

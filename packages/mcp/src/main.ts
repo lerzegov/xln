@@ -6,9 +6,10 @@ import { createServer, Roots } from "./server.js";
 
 const USAGE = `usage: xln-mcp [--root <folder>]...
 
-  An MCP server (stdio) giving AI agents xln's check, names, pull, build plan, build and
-  library status. Tools read and write only under the roots; relative paths resolve
-  against the first. Default root: the current folder.
+  An MCP server (stdio) giving AI agents xln's check, names, formulas, graph, pull,
+  build plan, build, verify, rename and library commands. Tools read and write only
+  under the roots (a library named in a project's config is also read elsewhere, never
+  written); relative paths resolve against the first. Default root: the current folder.
     --root   a folder the tools may use (repeat for several)
 `;
 

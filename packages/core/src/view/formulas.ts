@@ -90,10 +90,15 @@ export interface FormulaViewLine {
   stored: string;
   /** Display form, without `=`: no `_xlfn.`/`_xlpm.`, `x#` for `ANCHORARRAY(x)`, LF line breaks. */
   formula: string;
-  /** The value saved with the file (for a spill: its anchor's). */
-  value: CachedValue;
+  /** The value saved with the file (for a spill: its anchor's); absent when `uncalculated`. */
+  value?: CachedValue;
   /** `value` formatted short; undefined when none was saved. */
   valueText: string | undefined;
+  /**
+   * The formula has no value because Excel has not calculated it since a tool wrote it (an
+   * xln build): see `uncalculated`. Its extent, for a dynamic array, is the anchor alone.
+   */
+  uncalculated?: true;
   /** Defined names read by the formula, in source order (duplicates kept). */
   names: FormulaViewName[];
   /** Cell references in the formula, in source order. */
@@ -302,12 +307,13 @@ export function sheetFormulaView(wb: WorkbookSnapshot, sheetName: string, names:
       kind: f.kind === "shared-master" || f.kind === "shared-child" ? "shared" : f.kind,
       stored: "",
       formula: "",
-      value: f.value,
       valueText: shortValue(f.value),
       names: [],
       refs: [],
       lhs: [],
     };
+    if (uncalculated(wb, f)) line.uncalculated = true;
+    else line.value = f.value;
     if (f.kind === "array" || f.kind === "dynamic-array" || f.kind === "data-table") {
       const extent = f.range ?? sheet.spills.find((s) => s.anchor === f.cell)?.extent ?? f.cell;
       const r = rect(extent);
@@ -350,6 +356,18 @@ export function sheetFormulaView(wb: WorkbookSnapshot, sheetName: string, names:
     out.push(line);
   }
   return out;
+}
+
+/**
+ * A formula Excel has not calculated since a tool wrote it. The rule: the cell has a formula
+ * but no saved value at all (no `<v>`, no inline string: Excel saves one for every formula
+ * cell, `<v></v>` for an empty text), and the workbook still carries `fullCalcOnLoad="1"`,
+ * which the build sets and Excel drops when it saves (probe F06). Both together mean the
+ * file was written after Excel last saved it, and the value is missing, not empty. A data
+ * table's cells are Excel's, never written by a build.
+ */
+function uncalculated(wb: WorkbookSnapshot, f: CellFormula): boolean {
+  return wb.fullCalcOnLoad === true && f.kind !== "data-table" && f.value.raw === undefined;
 }
 
 function findSheet(wb: WorkbookSnapshot, name: string): Sheet | undefined {

@@ -7,7 +7,10 @@ import { readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   applyChangeSet,
+  buildReportLines,
   buildWorkbook,
+  describeChanges,
+  provenanceOnly,
   embeddedSourceXml,
   LOCK_FILE,
   parseEmbeddedSource,
@@ -197,6 +200,20 @@ describe("provenance tags (D6)", () => {
     const lock = parseLockfile(r.files![LOCK_FILE]!);
     expect(lock.names["Mod.Fn"]).toEqual(parseLockfile(back.files[LOCK_FILE]!).names["Mod.Fn"]);
     expect(build(r.bytes!, after(files, r)).status).toBe("up-to-date");
+  });
+
+  it("the text report folds updates of the tag alone into one line; the change set keeps each (feedback 2026-10-08)", () => {
+    const files = pulled();
+    edit(files, "names/_unmanaged.xln", "Fact = LAMBDA(n, 1);", "Fact = LAMBDA(n, 2);");
+    const r = build(bytes, files);
+    expect(r.status, why(r)).toBe("built");
+    const tagOnly = r.plan.changeSet.changes.filter(provenanceOnly);
+    expect(tagOnly.length).toBeGreaterThan(1);
+    const lines = buildReportLines(r);
+    expect(lines.filter((l) => l.includes("(provenance)"))).toEqual([]);
+    expect(lines).toContain("  update Fact (definition)");
+    expect(lines).toContain(`  update the provenance tag of ${tagOnly.length} module names (comment only)`);
+    expect(describeChanges(r.plan.changeSet.changes)).toHaveLength(r.plan.changeSet.changes.length - tagOnly.length + 1);
   });
 
   it("a tag changed or removed in Excel is not an edit: no conflict, no Excel change, the build puts it back", () => {

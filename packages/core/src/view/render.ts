@@ -71,11 +71,15 @@ export interface RenderedView {
 }
 
 /** Kind column: the saved size of a spill `(r×c)` or legacy array `{r×c}`, shared groups, data tables. */
+/** Shown in place of the value of a formula Excel has not calculated since a build wrote it. */
+export const UNCALCULATED = "(not calculated since the build)";
+
 export function kindTag(l: FormulaViewLine): string {
   const size = l.rows !== undefined && l.cols !== undefined ? `${l.rows}×${l.cols}` : "";
   switch (l.kind) {
     case "dynamic-array":
-      return size ? `(${size})` : "(spill)";
+      // Not calculated since the build: the saved extent is the anchor alone, not a size.
+      return size && !l.uncalculated ? `(${size})` : "(spill)";
     case "array":
       return size ? `{${size}}` : "{array}";
     case "data-table":
@@ -231,7 +235,7 @@ export function renderFormulaView(lines: readonly FormulaViewLine[], opts: Rende
     if (above) push(names);
     const level = lw > 0 ? pad(levelTags[index]!, lw - 2) + "  " : "";
     const head = level + (nameCol > 0 ? pad(above ? "" : names, nw) + "  " : "") + pad(labels[index]!, aw) + "  " + (tw > 0 ? pad(tags[index]!, tw) + "  " : "") + "= ";
-    const value = l.valueText !== undefined ? "→ " + l.valueText + (l.rows !== undefined && l.rows * (l.cols ?? 1) > 1 ? " …" : "") : "";
+    const value = l.uncalculated ? `→ ${UNCALCULATED}` : l.valueText !== undefined ? "→ " + l.valueText + (l.rows !== undefined && l.rows * (l.cols ?? 1) > 1 ? " …" : "") : "";
     const note = l.error !== undefined ? `  // does not parse: ${l.error}` : "";
 
     const starts: number[] = [];

@@ -264,6 +264,11 @@ export function buildGraph(wb: WorkbookSnapshot, names: NameIndex = workbookName
   const spill = (ctx: Ctx, operand: Expr, text: string): boolean => {
     const r = unwrap(operand);
     if (r.kind !== "ref") return false;
+    // `IS!#REF!#`: the anchor was deleted; say so rather than "not one cell".
+    if (r.refKind === "error") {
+      flag(ctx.node, "broken", "ref-deleted", "#REF!: the reference was deleted", text);
+      return true;
+    }
     if (r.qual?.book !== undefined) {
       flag(ctx.node, "external", "external", "reference to another workbook", text);
       return true;

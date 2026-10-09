@@ -63,6 +63,7 @@ export function readWorkbook(bytes: Uint8Array): WorkbookSnapshot {
   }
 
   const definedNames = readDefinedNames(wb, sheets, warn);
+  const fullCalc = firstChild(wb, "calcPr")?.attrs["fullCalcOnLoad"];
 
   const tables: Table[] = [];
   for (const sheet of sheets) {
@@ -107,6 +108,7 @@ export function readWorkbook(bytes: Uint8Array): WorkbookSnapshot {
     parts: [...pkg.names],
     foreignModuleStores: findForeignModuleStores(pkg, sheets),
     workbookPart,
+    ...(fullCalc === "1" || fullCalc === "true" ? { fullCalcOnLoad: true as const } : {}),
     warnings,
   };
 }

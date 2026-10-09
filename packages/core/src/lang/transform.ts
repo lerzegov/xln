@@ -288,7 +288,10 @@ export function decompileWithDiagnostics(stored: string, ctx: FormulaContext = {
   const visit = (node: Expr, parent: Expr | undefined): void => {
     switch (node.kind) {
       case "ref":
-        if (sameSheet(node.qual, home)) edits.set(node, () => node.address);
+        // `IS!#REF!` keeps its sheet even on its home sheet: without one it would read as the
+        // error constant `#REF!`, a different stored form that compile cannot qualify back
+        // (a pull's own output then counted as an edit, FEEDBACK 2026-10-08).
+        if (sameSheet(node.qual, home) && node.refKind !== "error") edits.set(node, () => node.address);
         else requote(node, node.address);
         break;
       case "name": {

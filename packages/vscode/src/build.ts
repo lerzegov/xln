@@ -4,7 +4,7 @@
 // the backup (E5), the re-read of what was written, and conflicts shown as diffs (E2).
 
 import * as vscode from "vscode";
-import { buildWorkbook, cellValueMap, CONFIG_FILE, describeChange, embedSetting, isLocked, isSourcePath, labelNoticeLines, LOCK_FILE, NAMES_DIR, readBack, readWorkbook, refusalReasons, renameLabelNotices, renamedConsumedLine, type BuildResult, type Change, type Conflict, type LabelNotice } from "@xln/core";
+import { buildWorkbook, cellValueMap, CONFIG_FILE, describeChanges, embedSetting, isLocked, isSourcePath, labelNoticeLines, LOCK_FILE, NAMES_DIR, readBack, readWorkbook, refusalReasons, renameLabelNotices, renamedConsumedLine, type BuildResult, type Change, type Conflict, type LabelNotice } from "@xln/core";
 import { excelHost } from "./excelHost.js";
 import { Activity } from "./log.js";
 import { baseName, dirName } from "./inspect.js";
@@ -47,8 +47,9 @@ export interface BuildCommandOptions {
 
 /** The changes, described, the first `max`, then how many more. */
 function changeList(changes: readonly Change[], max = 12, sep = "\n"): string {
-  const shown = changes.slice(0, max).map(describeChange);
-  if (changes.length > max) shown.push(`… and ${changes.length - max} more`);
+  const lines = describeChanges(changes);
+  const shown = lines.slice(0, max);
+  if (lines.length > max) shown.push(`… and ${lines.length - max} more`);
   return shown.join(sep);
 }
 

@@ -179,3 +179,22 @@ export function describeChange(c: Change): string {
     }
   }
 }
+
+/** A `set-name` whose only change is the provenance tag in its comment (D6). */
+export function provenanceOnly(c: Change): boolean {
+  return c.op === "set-name" && c.fields.length === 1 && c.fields[0] === "provenance";
+}
+
+/**
+ * The changes described, one line each, for text reports, except updates of the
+ * provenance tag alone: those are one line after the others (feedback 2026-10-08: the first
+ * build of a workbook xln never built tags every module name, ~20 lines before the real
+ * change). The change set itself (JSON) keeps every change.
+ */
+export function describeChanges(changes: readonly Change[]): string[] {
+  const tags = changes.filter(provenanceOnly);
+  if (tags.length < 2) return changes.map(describeChange);
+  const out = changes.filter((c) => !provenanceOnly(c)).map(describeChange);
+  out.push(`update the provenance tag of ${tags.length} module names (comment only)`);
+  return out;
+}

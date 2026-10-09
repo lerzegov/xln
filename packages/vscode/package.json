@@ -2,7 +2,7 @@
   "name": "xln",
   "displayName": "xln — Excel names as code",
   "description": "Excel defined names and LAMBDAs as text: pull a workbook's names into .xln modules, edit, check and audit them, and build them back into the .xlsx. No add-in. Desktop VS Code and vscode.dev.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "lerzegov-xln",
   "private": true,
   "license": "MIT",

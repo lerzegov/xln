@@ -11,7 +11,7 @@ import {
   ApplyError,
   backupName,
   CHANGESET_FORMAT,
-  describeChange,
+  describeChanges,
   isLocked,
   lockFileName,
   readBack,
@@ -102,7 +102,7 @@ export function runApply(cmd: ApplyCommand): ApplyOutcome {
 
 export function applyText(cmd: ApplyCommand, o: ApplyOutcome): string {
   const out = [`xln apply ${basename(cmd.workbook)}: ${o.message}`];
-  for (const c of o.changes) out.push(`  ${describeChange(c)}`);
+  for (const l of describeChanges(o.changes)) out.push(`  ${l}`);
   if (o.report) {
     for (const [sheet, s] of Object.entries(o.report.sheets)) {
       const bits = [

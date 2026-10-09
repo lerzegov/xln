@@ -52,6 +52,27 @@ describe("decompile: stored → display", () => {
     expect(decompile("'bs'!A1", ctx)).toBe("A1"); // sheet names are case-insensitive
   });
 
+  it("keeps the home sheet on a deleted reference: a bare #REF! is the error constant (FEEDBACK 2026-10-08)", () => {
+    const ctx = { homeSheet: "IS" };
+    // Each stored form, decompiled and compiled again, is what Excel stored.
+    const cases: [string, string][] = [
+      ["_xlfn.ANCHORARRAY(IS!#REF!)", "IS!#REF!#"],
+      ["_xlfn.SINGLE(IS!#REF!)", "@IS!#REF!"],
+      ["SUM(IS!#REF!)", "SUM(IS!#REF!)"],
+      ["IS!#REF!+1", "IS!#REF!+1"],
+      ["_xlfn.LET(_xlpm.x,IS!#REF!,_xlpm.x+1)", "LET(x,IS!#REF!,x+1)"],
+      ["_xlfn.XLOOKUP(1,IS!#REF!,IS!$A$1:$A$3)", "XLOOKUP(1,IS!#REF!,$A$1:$A$3)"],
+      ["_xlfn.TAKE(_xlfn.ANCHORARRAY(IS!#REF!),1)", "TAKE(IS!#REF!#,1)"],
+      ["_xlfn.ANCHORARRAY(IS!#REF!)+_xlfn.ANCHORARRAY(IS!$B$2)", "IS!#REF!#+$B$2#"],
+      ["_xlfn.ANCHORARRAY('My Sheet'!#REF!)", "'My Sheet'!#REF!#"],
+      ["#REF!", "#REF!"],
+    ];
+    for (const [stored, display] of cases) {
+      expect(decompile(stored, ctx)).toBe(display);
+      expect(compile(display, ctx)).toBe(stored);
+    }
+  });
+
   it("keeps the author's spacing and line breaks", () => {
     expect(decompile("_xlfn.LAMBDA(_xlpm.x,\r\n  _xlpm.x*2)")).toBe("LAMBDA(x,\r\n  x*2)");
     expect(decompile("_xlfn.LET( _xlpm.base, Assumptions[Revenue Y0],  _xlpm.base * 2 )")).toBe("LET( base, Assumptions[Revenue Y0],  base * 2 )");

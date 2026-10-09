@@ -278,6 +278,12 @@ export interface WorkbookSnapshot {
   foreignModuleStores: ForeignModuleStore[];
   /** Package path of the workbook part (normally `xl/workbook.xml`). */
   workbookPart: string;
+  /**
+   * `<calcPr fullCalcOnLoad="1">`: the file asks Excel to recalculate everything on open.
+   * Excel drops it when it saves (probe F06), so it marks a file a tool wrote (an xln build)
+   * that Excel has not saved since.
+   */
+  fullCalcOnLoad?: true;
   /** Non-fatal oddities met while reading (missing parts, dangling references). */
   warnings: string[];
 }

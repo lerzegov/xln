@@ -425,6 +425,25 @@ export function libPublishText(cmd: LibPublishCommand, o: LibPublishOutcome): st
   return `${head}\n${fileDiff(o.before, r.text)}\n${base}${warningText(o.warnings)}`;
 }
 
+// The `--json` bodies, shared with in-process callers (the MCP server).
+
+export function libPublishJson(cmd: LibPublishCommand, o: LibPublishOutcome): Record<string, unknown> {
+  return { ok: true, file: o.file, created: o.result.created, changed: o.result.changed, written: o.written, dryRun: cmd.dryRun, base: o.base, kept: o.kept, warnings: o.warnings.map((w) => w.message), diff: fileDiff(o.before, o.result.text).split("\n") };
+}
+
+export function libTakeJson(cmd: LibTakeCommand, o: LibTakeOutcome): Record<string, unknown> {
+  return { ok: o.refused === undefined, file: o.file, state: o.state, base: o.base, written: o.written, kept: o.kept, dryRun: cmd.dryRun, warnings: o.warnings.map((w) => w.message), ...(o.refused ? { refused: o.refused } : {}), diff: fileDiff(o.before, o.after).split("\n") };
+}
+
+/** `xln lib base` for one name that cannot be recorded is refused (exit 1). */
+export function libBaseRefused(cmd: LibBaseCommand, o: LibBaseOutcome): boolean {
+  return !cmd.all && o.recorded.length === 0;
+}
+
+export function libBaseJson(cmd: LibBaseCommand, o: LibBaseOutcome): Record<string, unknown> {
+  return { ok: !libBaseRefused(cmd, o), dryRun: cmd.dryRun, written: o.written, recorded: o.recorded.map((x) => ({ name: x.name, file: x.path, base: x.hash })), skipped: o.skipped, files: o.files, kept: o.kept, warnings: o.warnings.map((w) => w.message) };
+}
+
 const LIB_USAGE = `usage: xln lib status <workbook.xlsx | project-folder> [--lib <dir>] [--json] [--no-diff]
        xln lib publish <project-folder> <Name> [--lib <dir>] [--dry-run] [--json]
        xln lib take <project-folder> <Name> [--lib <dir>] [--dry-run] [--discard] [--json]
@@ -485,13 +504,7 @@ export function mainLib(args: string[], io: LibIo): number {
     const o = runLibPublish(cmd);
     if ("error" in o) return fail(o.error);
     if (json) {
-      io.out(
-        JSON.stringify(
-          { ok: true, file: o.file, created: o.result.created, changed: o.result.changed, written: o.written, dryRun, base: o.base, kept: o.kept, warnings: o.warnings.map((w) => w.message), diff: fileDiff(o.before, o.result.text).split("\n") },
-          null,
-          2,
-        ) + "\n",
-      );
+      io.out(JSON.stringify(libPublishJson(cmd, o), null, 2) + "\n");
     } else io.out(libPublishText(cmd, o));
     return 0;
   }
@@ -500,8 +513,7 @@ export function mainLib(args: string[], io: LibIo): number {
     const o = runLibTake(cmd);
     if ("error" in o) return fail(o.error);
     if (json) {
-      const body = { ok: o.refused === undefined, file: o.file, state: o.state, base: o.base, written: o.written, kept: o.kept, dryRun, warnings: o.warnings.map((w) => w.message), ...(o.refused ? { refused: o.refused } : {}), diff: fileDiff(o.before, o.after).split("\n") };
-      io.out(JSON.stringify(body, null, 2) + "\n");
+      io.out(JSON.stringify(libTakeJson(cmd, o), null, 2) + "\n");
     } else if (o.refused) io.err(libTakeText(cmd, o));
     else io.out(libTakeText(cmd, o));
     return o.refused ? 1 : 0;
@@ -511,10 +523,9 @@ export function mainLib(args: string[], io: LibIo): number {
     const o = runLibBase(cmd);
     if ("error" in o) return fail(o.error);
     // The one named and not recordable: say why, exit 1 (as take refuses).
-    const refused = !all && o.recorded.length === 0;
+    const refused = libBaseRefused(cmd, o);
     if (json) {
-      const body = { ok: !refused, dryRun, written: o.written, recorded: o.recorded.map((x) => ({ name: x.name, file: x.path, base: x.hash })), skipped: o.skipped, files: o.files, kept: o.kept, warnings: o.warnings.map((w) => w.message) };
-      io.out(JSON.stringify(body, null, 2) + "\n");
+      io.out(JSON.stringify(libBaseJson(cmd, o), null, 2) + "\n");
     } else if (refused) io.err(libBaseText(cmd, o));
     else io.out(libBaseText(cmd, o));
     return refused ? 1 : 0;
