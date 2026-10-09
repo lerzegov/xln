@@ -39,13 +39,20 @@ LAMBDA library: xln_lib_status compares with the library; xln_lib_take takes the
 xln never changes names or scopes on its own, never merges a conflict silently, refuses to write while Excel has the file open, keeps <workbook>.backup.xlsx, and reads every build back.
 Paths are absolute or relative to the first allowed root; paths outside the roots are refused.`;
 
+/**
+ * The summary goes into the structured data too (`summary`, first): the spec makes the
+ * text block the serialized structured content "for backwards compatibility", and a client
+ * may hand the model only `structuredContent` when it is present (Claude Code did in the
+ * MCP trial of 2026-10-09: the agent saw the JSON, not the summary). Clients that read
+ * only `content` get the summary and the JSON without it.
+ */
 function result(o: ToolOutput): CallToolResult {
   return {
     content: [
       { type: "text", text: o.text },
       { type: "text", text: JSON.stringify(o.data) },
     ],
-    structuredContent: o.data,
+    structuredContent: { summary: o.text, ...o.data },
   };
 }
 
@@ -62,6 +69,11 @@ function run(f: () => ToolOutput): CallToolResult {
     return failure(e);
   }
 }
+
+const detail = z
+  .enum(["compact", "full"])
+  .optional()
+  .describe("'compact' (default): the change set without stored forms, provenance-only updates counted; 'full': the CLI's change set as it is");
 
 const path = (what: string) => z.string().min(1).describe(`${what}: absolute, or relative to the server's first root`);
 
@@ -141,10 +153,13 @@ export function createServer(opts: ServerOptions): McpServer {
       description:
         "Compare the project's source with the last pull (lockfile) and the workbook, three-way, and return the change set a build would write " +
         "(names to set, rename, re-scope or delete; cell formulas to replace), conflicts (changed in Excel and in source), refusals (source errors, " +
-        "names still used by cells) and warnings. Nothing is written. Call it before xln_build and show the plan to the user; it returns a planId for xln_build.",
+        "names still used by cells) and warnings. Nothing is written. Call it before xln_build and show the plan to the user (summary is the plan as text); it returns a planId for xln_build. " +
+        "By default the change set is compact: each change's display text (what the build writes), previous cell formulas as displayed, a cell written on one line " +
+        "as in the workbook marked by layout, and updates of the provenance tag alone folded into changeSet.provenanceOnly; detail: 'full' gives the CLI's change set with stored forms.",
       inputSchema: z.object({
         workbook: path("Workbook file"),
         project: z.string().optional().describe("Project folder (default <workbook>.xln beside the workbook)"),
+        detail: detail,
       }),
       annotations: { readOnlyHint: true, openWorldHint: false },
     },
@@ -170,6 +185,7 @@ export function createServer(opts: ServerOptions): McpServer {
         out: z.string().optional().describe("Write the built workbook to this file instead; the original and the lockfile stay as they are"),
         confirm: z.literal(true).describe("Must be true: the user approved the plan"),
         planId: z.string().optional().describe("The planId from xln_build_plan: refuse if the change set is no longer that plan"),
+        detail: detail,
       }),
       annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: false, openWorldHint: false },
     },

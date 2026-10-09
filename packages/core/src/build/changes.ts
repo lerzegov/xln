@@ -93,7 +93,18 @@ export interface SetCellFormula {
   name?: string;
   /** The top-left cell's stored formula before the build; absent for a slot (empty cell). */
   previous?: string;
+  /**
+   * Set when the source's text has line breaks and the build writes it on one line: the
+   * cell's formula was on one line in the workbook (the source's layout is pull's
+   * pretty-printing), or the cell had none. `stored` and `display` are then the one-line
+   * forms (`oneLine`), the same tokens as the source's.
+   */
+  layout?: CellLayout;
 }
+
+export const ONE_LINE_AS_WORKBOOK = "one line, as in the workbook";
+export const ONE_LINE_NEW = "one line, a new formula";
+export type CellLayout = typeof ONE_LINE_AS_WORKBOOK | typeof ONE_LINE_NEW;
 
 /** Remove the formulas of existing cells, leaving them empty (the source wrote `= ;`). */
 export interface ClearCellFormula {
@@ -169,7 +180,7 @@ export function describeChange(c: Change): string {
     case "set-name":
       return `${c.fields.includes("created") ? "create" : "update"} ${scopedKey(c.name, c.scope)}${c.fields.includes("created") ? "" : ` (${c.fields.join(", ")})`}${c.repair ? " [repairs a missing prefix]" : ""}`;
     case "set-cell-formula":
-      return `${c.previous === undefined ? "fill" : "set formula of"} ${c.sheet}!${c.range}${c.name ? ` (${c.name})` : ""}`;
+      return `${c.previous === undefined ? "fill" : "set formula of"} ${c.sheet}!${c.range}${c.name ? ` (${c.name})` : ""}${c.layout === ONE_LINE_AS_WORKBOOK ? " [on one line, as in the workbook]" : c.layout === ONE_LINE_NEW ? " [on one line]" : ""}`;
     case "clear-cell-formula":
       return `clear formula of ${c.sheet}!${c.range}${c.name ? ` (${c.name})` : ""}`;
     case "set-embedded-source": {

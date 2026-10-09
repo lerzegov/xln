@@ -28,7 +28,7 @@ export {
   structInnerToStored,
 } from "./transform.js";
 export type { FormulaContext, CompileOptions, TransformResult, WorkbookLink } from "./transform.js";
-export { prettyPrint, equalModuloWhitespace, tokenKeys, canonicalNumber, toCrLf, type TokenKeyOptions } from "./format.js";
+export { prettyPrint, equalModuloWhitespace, tokenKeys, canonicalNumber, toCrLf, oneLine, hasLayoutBreaks, type TokenKeyOptions } from "./format.js";
 export type { PrettyOptions } from "./format.js";
 export { shiftFormula, shiftAddress } from "./shift.js";
 export { formulaCursor, activeCall, type FormulaCursor, type CursorFrame, type CursorLocal } from "./cursor.js";

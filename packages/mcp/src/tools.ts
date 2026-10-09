@@ -47,7 +47,16 @@ import {
   backupName,
   CHECK_IDS,
   classify,
+  decompile,
   isLocked,
+  layoutToLf,
+  provenanceOnly,
+  readWorkbook,
+  scopedKey,
+  type Change,
+  type ChangeSet,
+  type SetName,
+  type WorkbookLink,
   libStatusJson,
   placeText,
   pullProject,
@@ -359,12 +368,68 @@ function runBuildSafe(cmd: Parameters<typeof runBuild>[0]): BuildOutcome {
   }
 }
 
-export function buildPlanTool(roots: Roots, args: Omit<BuildArgs, "out">): ToolOutput {
+/** How much of a change set a build tool returns. */
+export type BuildDetail = "compact" | "full";
+
+/**
+ * A change as an agent reviews it (feedback 2026-10-09: a plan of 16 real changes ran to
+ * 25 kB): the stored text (`_xlfn.`, `_xlpm.`) goes, a cell's previous formula is shown
+ * as Excel displays it, embedded source files are listed by path. `display` is what the
+ * source says and what the build writes, so nothing an agent must review is lost.
+ */
+function compactChange(c: Change, shown: (stored: string) => string): Record<string, unknown> {
+  switch (c.op) {
+    case "set-name": {
+      const { stored: _stored, ...rest } = c;
+      return rest;
+    }
+    case "set-cell-formula": {
+      const { stored: _stored, previous, layout, ...rest } = c;
+      return { ...rest, ...(previous !== undefined ? { previous: shown(previous) } : {}), ...(layout !== undefined ? { layout } : {}) };
+    }
+    case "clear-cell-formula": {
+      const { previous, ...rest } = c;
+      return { ...rest, ...(previous !== undefined ? { previous: shown(previous) } : {}) };
+    }
+    case "set-embedded-source":
+      return { op: c.op, files: Object.keys(c.files) };
+    default:
+      return { ...c };
+  }
+}
+
+/**
+ * The change set for `detail: "compact"`: updates of the provenance tag alone folded into
+ * `provenanceOnly` (as the text plan folds them), the others compacted. `"full"` is the
+ * CLI's change set as it is.
+ */
+function changeSetFor(json: Record<string, unknown>, wb: string, detail: BuildDetail | undefined): Record<string, unknown> {
+  const cs = json["changeSet"] as ChangeSet | null;
+  if (detail === "full" || !cs) return json;
+  let links: { names: string[]; links: WorkbookLink[] } | undefined;
+  const shown = (stored: string): string => {
+    try {
+      if (!links) {
+        const snap = readWorkbook(new Uint8Array(readFileSync(wb)));
+        links = { names: snap.definedNames.map((d) => d.name), links: snap.externalLinks ?? [] };
+      }
+      return layoutToLf(decompile(stored, links));
+    } catch {
+      return layoutToLf(stored);
+    }
+  };
+  const tags = cs.changes.filter(provenanceOnly) as SetName[];
+  const changeSet: Record<string, unknown> = { format: cs.format, workbook: cs.workbook, changes: cs.changes.filter((c) => !provenanceOnly(c)).map((c) => compactChange(c, shown)) };
+  if (tags.length) changeSet["provenanceOnly"] = { count: tags.length, names: tags.map((t) => scopedKey(t.name, t.scope)) };
+  return { ...json, changeSet };
+}
+
+export function buildPlanTool(roots: Roots, args: Omit<BuildArgs, "out"> & { detail?: BuildDetail }): ToolOutput {
   const { wb, project } = buildPaths(roots, args);
   const o = runBuildSafe({ workbook: wb, project, dryRun: true, force: false, json: true });
   const text = buildText({ workbook: wb, dryRun: true, force: false, json: false }, o).trimEnd();
-  if (o.exit === 2) throw new ToolFailure(text, buildJson(o) as Record<string, unknown>);
-  const json = buildJson(o) as Record<string, unknown>;
+  if (o.exit === 2) throw new ToolFailure(text, changeSetFor(buildJson(o) as Record<string, unknown>, wb, args.detail));
+  const json = changeSetFor(buildJson(o) as Record<string, unknown>, wb, args.detail);
   const status = o.result?.status;
   const willWrite = o.exit === 0 && status !== "up-to-date" && (o.result?.plan.changeSet.changes.length ?? 0) > 0;
   const open = excelHasOpen(wb);
@@ -380,6 +445,7 @@ export function buildPlanTool(roots: Roots, args: Omit<BuildArgs, "out">): ToolO
 export interface BuildWriteArgs extends BuildArgs {
   confirm: boolean;
   planId?: string;
+  detail?: BuildDetail;
 }
 
 export function buildTool(roots: Roots, args: BuildWriteArgs): ToolOutput {
@@ -394,7 +460,7 @@ export function buildTool(roots: Roots, args: BuildWriteArgs): ToolOutput {
   }
   const o = runBuildSafe({ workbook: wb, project, ...(out ? { out } : {}), dryRun: false, force: false, json: true });
   const text = buildText({ workbook: wb, dryRun: false, force: false, json: false }, o).trimEnd();
-  const json = buildJson(o) as Record<string, unknown>;
+  const json = changeSetFor(buildJson(o) as Record<string, unknown>, o.backup ?? wb, args.detail);
   if (o.exit !== 0) throw new ToolFailure(text, json);
   return { text, data: json };
 }

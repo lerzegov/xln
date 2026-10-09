@@ -164,7 +164,10 @@ const USAGE = `usage: xln pull <workbook.xlsx> [--out <dir>] [--json] [--width <
             moved it; an unnamed one is its address, which is read-only. What a name
             covers is the address's: Name @C6# is the spill, Name @C6 the cell alone
             (add or remove the #; nothing moves a name on its own). Filling a slot
-            (Name @C6 = ;) writes the formula into the empty cell. The result is
+            (Name @C6 = ;) writes the formula into the empty cell. A cell formula
+            Excel had on one line (or a new one) is written on one line, though the
+            source spreads it over several; one laid out on several lines in Excel
+            keeps the source's layout ([on one line, as in the workbook]). The result is
             read back before and after writing. Refuses while Excel has the workbook
             open (~$ file). The previous file is kept as <workbook>.backup.xlsx. A
             rename (xln rename, or @renamed(OldName) before the new name) also rewrites

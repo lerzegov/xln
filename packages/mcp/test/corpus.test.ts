@@ -1,7 +1,7 @@
 // The MCP tools on the real workbooks (XLN_CORPUS=<folder>, workbooks at */dist/*.xlsx),
 // each copied into a temporary root first: the corpus is only read. A check's summary must
 // stay small enough for an agent's context, and a fresh pull must plan as up to date.
-import { copyFileSync, existsSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
+import { copyFileSync, existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 import { Client } from "@modelcontextprotocol/client";
@@ -111,5 +111,29 @@ describe.skipIf(!CORPUS)("xln-mcp on the corpus (XLN_CORPUS)", () => {
       expect(v.isError, name).toBeFalsy();
       expect(v.structuredContent!["verdict"], name).toBe("same");
     }
+  });
+
+  it("lbo-ep03r: the MCP trial's FN.LAG edit plans compactly (about 9 kB of structured data; the full change set is about 22 kB)", { timeout: 120_000 }, async () => {
+    const src = join(CORPUS!, "lbo-ep03r", "dist", "lbo-ep03r.xlsx");
+    if (!existsSync(src)) return;
+    copyFileSync(src, join(root, "trial.xlsx"));
+    expect((await call("xln_pull", { workbook: "trial.xlsx" })).isError).toBeFalsy();
+    const lag = /FN\.SEEDROW\(0, FN\.PREV\(([A-Za-z_]+)\)\)/g;
+    for (const f of ["SCF recursive.xln", "SCF.xln"]) {
+      const p = join(root, "trial.xln", "names", "sheets", f);
+      writeFileSync(p, readFileSync(p, "utf8").replace(lag, "FN.LAG($1, 0)"));
+    }
+    const fn = join(root, "trial.xln", "names", "FN.xln");
+    writeFileSync(fn, readFileSync(fn, "utf8").replace("FN.MAXDEV = ", "FN.LAG = LAMBDA(row, seed, FN.SEEDROW(seed, FN.PREV(row)) );\nFN.MAXDEV = "));
+    const plan = await call("xln_build_plan", { workbook: "trial.xlsx" });
+    const full = await call("xln_build_plan", { workbook: "trial.xlsx", detail: "full" });
+    const cs = plan.structuredContent!["changeSet"] as { changes: { op: string; layout?: string }[]; provenanceOnly?: { count: number } };
+    expect(cs.changes).toHaveLength(16);
+    expect(cs.changes.filter((c) => c.layout !== undefined)).toHaveLength(3);
+    expect(cs.provenanceOnly?.count).toBeGreaterThan(0);
+    const compactSize = JSON.stringify(plan.structuredContent).length;
+    const fullSize = JSON.stringify(full.structuredContent).length;
+    expect(compactSize).toBeLessThan(12_000);
+    expect(compactSize * 2).toBeLessThan(fullSize);
   });
 });

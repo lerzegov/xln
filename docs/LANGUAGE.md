@@ -603,6 +603,19 @@ stored grammar before writing.
 Cell formulas are written in dynamic-array form (`cm` and `t="array"`), which Excel
 accepts for scalars too (probe F8).
 
+**A cell keeps the workbook's layout.** A pull lays a long cell formula out on several
+lines in the sheet file, but Excel's cells are almost always one line. So when the cell's
+formula was on one line in the workbook, a build writes the new formula on one line too:
+every whitespace holding a line break (with the indentation after it) becomes nothing
+after `(`, `{` or `;`, before `)`, `}`, `,` or `;` and at either end, and one space
+elsewhere (`LET(\n    x, 1,\n    x + 1\n)` → `LET(x, 1, x + 1)`). Strings keep their line
+breaks (they are the value), and nothing else changes: the tokens are the source's. A
+formula already on several lines in Excel (laid out by hand with Alt+Enter) keeps the
+source's layout, and a new formula (a slot) is written on one line. The plan says so
+(`set formula of SCF!C11 [on one line, as in the workbook]`; JSON `layout`). The source
+keeps its own layout, and since comparisons ignore whitespace, the next plan and pull see
+no edit. Defined names (LAMBDAs, LETs) keep the source's layout.
+
 ### 8.3 LET and LAMBDA
 
 ```
@@ -624,7 +637,8 @@ IMMED = LAMBDA(x, x + 1)(2);
 - A LAMBDA bound in a LET, or returned by a LAMBDA, can be called (`f(2)`,
   `MAKEADDER(2)(3)`). LAMBDA names may call themselves (recursion is not a cycle).
 - Long LET and LAMBDA definitions are pretty-printed by a pull (one binding per line),
-  unless Excel already stored them on several lines.
+  unless Excel already stored them on several lines. A build writes a defined name with
+  the source's layout, and a cell formula on one line when Excel had it on one (§8.2).
 
 ### 8.4 The function catalogue
 

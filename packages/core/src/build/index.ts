@@ -1,6 +1,6 @@
 // Build (M3a): source project → change set → patched workbook, with read-back and verify.
-export { CHANGESET_FORMAT, orderChanges, describeChange, describeChanges, provenanceOnly, scopedKey, referenceCounts } from "./changes.js";
-export type { Change, ChangeSet, SetName, DeleteName, RenameName, RenameReferences, RescopeName, NameField, Scope, SetCellFormula, ClearCellFormula, SetEmbeddedSource } from "./changes.js";
+export { CHANGESET_FORMAT, orderChanges, describeChange, describeChanges, provenanceOnly, scopedKey, referenceCounts, ONE_LINE_AS_WORKBOOK, ONE_LINE_NEW } from "./changes.js";
+export type { Change, ChangeSet, SetName, DeleteName, RenameName, RenameReferences, RescopeName, NameField, Scope, SetCellFormula, ClearCellFormula, SetEmbeddedSource, CellLayout } from "./changes.js";
 export { readSourceProject, isSourcePath, RENAMED } from "./source.js";
 export type { SourceName, SourceProblem, SourceProject, SourceCell, SourceAddress } from "./source.js";
 export { planBuild, upgradeLockfile, sourceFindings, sourceErrors } from "./plan.js";

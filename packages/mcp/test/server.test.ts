@@ -206,6 +206,14 @@ describe("xln-mcp", () => {
     const changes = (ps["changeSet"] as { changes: { op: string; name?: string }[] }).changes;
     expect(changes.some((c) => c.op === "set-name" && c.name === "Rate")).toBe(true);
     expect(text(plan)).toContain("dry run: nothing written");
+    // Compact by default: no stored forms; the summary is in the structured data too.
+    expect(changes.every((c) => !("stored" in c))).toBe(true);
+    expect(ps["summary"]).toBe(plan.content[0]!.text);
+    expect(JSON.parse(plan.content[1]!.text!)).toEqual(Object.fromEntries(Object.entries(ps).filter(([k]) => k !== "summary")));
+    const full = (await call("xln_build_plan", { workbook: "built.xlsx", detail: "full" })).structuredContent!;
+    const fullChanges = (full["changeSet"] as { changes: { op: string; name?: string; stored?: string }[] }).changes;
+    expect(fullChanges.find((c) => c.name === "Rate")!.stored).toBe("0.25");
+    expect(full["planId"]).toBe(ps["planId"]);
     expect(readFileSync(wb).equals(before)).toBe(true);
     const id = ps["planId"] as string;
 
@@ -360,7 +368,7 @@ describe("xln-mcp", () => {
     const r = await call("xln_graph", { workbook: "graph.xlsx" });
     expect(r.isError, text(r)).toBeFalsy();
     const { buildMs: _a, ...want } = graphSummary({ workbook: wb, json: true }).summary;
-    const { buildMs: _b, totals, ok, ...got } = r.structuredContent! as Record<string, unknown>;
+    const { buildMs: _b, totals, ok, summary: _s, ...got } = r.structuredContent! as Record<string, unknown>;
     expect(got).toEqual(JSON.parse(JSON.stringify(want)));
     expect(ok).toBe(true);
     expect((totals as Record<string, number>)["flagged"]).toBe(1);
@@ -520,6 +528,40 @@ describe("xln-mcp", () => {
     expect(linked.isError).toBe(true);
     expect(text(linked)).toMatch(/outside the allowed roots/);
     expect(existsSync(join(away, "FN.HALF.lambda"))).toBe(false);
+  });
+
+  it("xln_build_plan, compact: previous cell formulas as displayed, the one-line layout, no stored forms; xln_build too", async () => {
+    copy("f8_base.xlsx", "cells.xlsx");
+    expect((await call("xln_pull", { workbook: "cells.xlsx" })).isError).toBeFalsy();
+    const f = join(root, "cells.xln", "names", "sheets", "N.xln");
+    writeFileSync(f, readFileSync(f, "utf8").replace("@B2 = A1*10;", "@B2 = LET(\n    x, A1*10,\n    SEQUENCE(x)\n);"));
+    const plan = await call("xln_build_plan", { workbook: "cells.xlsx" });
+    const changes = (plan.structuredContent!["changeSet"] as { changes: Record<string, unknown>[] }).changes;
+    expect(changes).toEqual([{ op: "set-cell-formula", sheet: "N", range: "B2", display: "LET(x, A1*10, SEQUENCE(x))", previous: "A1*10", layout: "one line, as in the workbook" }]);
+    expect(text(plan)).toContain("set formula of N!B2 [on one line, as in the workbook]");
+    const full = await call("xln_build_plan", { workbook: "cells.xlsx", detail: "full" });
+    expect((full.structuredContent!["changeSet"] as { changes: Record<string, unknown>[] }).changes[0]!["stored"]).toBe("_xlfn.LET(_xlpm.x, A1*10, _xlfn.SEQUENCE(_xlpm.x))");
+    const built = await call("xln_build", { workbook: "cells.xlsx", confirm: true, planId: plan.structuredContent!["planId"] as string });
+    expect(built.isError, text(built)).toBeFalsy();
+    expect((built.structuredContent!["changeSet"] as { changes: Record<string, unknown>[] }).changes).toEqual(changes);
+    expect(built.structuredContent!["summary"]).toBe(built.content[0]!.text);
+  });
+
+  it("every tool's structured result starts with the text summary (a client may show only structuredContent)", async () => {
+    copy("f7_base.xlsx", "sum.xlsx");
+    for (const [tool, args] of [
+      ["xln_check", { path: "sum.xlsx" }],
+      ["xln_names", { path: "sum.xlsx", limit: 2 }],
+      ["xln_formulas", { workbook: "sum.xlsx", limit: 2 }],
+      ["xln_graph", { workbook: "sum.xlsx" }],
+      ["xln_pull", { workbook: "sum.xlsx" }],
+      ["xln_build_plan", { workbook: "sum.xlsx" }],
+    ] as const) {
+      const r = await call(tool, args);
+      expect(r.isError, `${tool}: ${text(r)}`).toBeFalsy();
+      expect(Object.keys(r.structuredContent!)[0], tool).toBe("summary");
+      expect(r.structuredContent!["summary"], tool).toBe(r.content[0]!.text);
+    }
   });
 
   it("parses --root", () => {

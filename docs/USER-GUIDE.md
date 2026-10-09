@@ -168,6 +168,14 @@ with where it came from (§8); the plan says that in one line, `update the prove
 of 22 module names (comment only)`, after the real changes (`xln build --dry-run --json`
 lists each).
 
+A cell keeps the layout it has in Excel. The pull spreads a long cell formula over
+several lines in the sheet file; when Excel had that formula on one line, the build
+writes yours on one line too, as you would see it in the formula bar, and the plan says
+`[on one line, as in the workbook]`. Only line breaks and indentation go: spaces on a
+line and text in quotes stay. A formula you laid out on several lines in Excel
+(Alt+Enter) keeps the layout of your source. Your `.xln` file is not changed, and the next
+pull or plan sees no edit. Names (LAMBDAs) are written as your source lays them out.
+
 If the workbook is open in Excel, xln offers **Close in Excel and build**: Excel closes
 it (asking first if you have unsaved changes), xln writes the file, and Excel opens it
 again. **Build and reopen in Excel** does the same in one step. In the end Excel comes to
@@ -626,13 +634,17 @@ Problems panel to be quiet before you build. An AI agent working on a workbook c
 ### AI agents: the MCP server
 
 Agents such as Claude Code and Claude Desktop can use xln directly through its MCP
-server, `xln-mcp`. It gives them six tools:
+server, `xln-mcp`. Its main tools:
 - `xln_check`: the same verdict as `xln check`;
-- `xln_names`: list and search names;
+- `xln_names`, `xln_formulas`, `xln_graph`: read the model as code;
 - `xln_pull`;
-- `xln_build_plan`: a dry run;
+- `xln_build_plan`: a dry run, compact by default (what each change writes, as you read
+  it in Excel; updates of the provenance tag alone counted, not listed);
 - `xln_build`;
-- `xln_lib_status`.
+- `xln_verify`, `xln_rename` and the library tools.
+
+Every result starts with a short text summary, also inside the structured data, since
+some clients (Claude Code) show the agent only that.
 
 A typical session: you ask the agent to add a LAMBDA, and it does four things.
 1. It pulls the workbook and edits `names/FN.xln`.

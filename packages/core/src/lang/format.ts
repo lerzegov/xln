@@ -245,3 +245,46 @@ export function toCrLf(src: string): string {
     .map((t) => (t.kind === "ws" || t.kind === "isect" ? t.text.replace(/\r?\n/g, "\r\n") : t.text))
     .join("");
 }
+
+// ---------------------------------------------------------------------------------------
+// One line
+// ---------------------------------------------------------------------------------------
+
+function breaksLine(t: Token): boolean {
+  return (t.kind === "ws" || t.kind === "isect") && (t.text.includes("\n") || t.text.includes("\r"));
+}
+
+/** Whether a formula's layout has a line break (one inside a string is its value, not layout). */
+export function hasLayoutBreaks(src: string): boolean {
+  if (!src.includes("\n") && !src.includes("\r")) return false;
+  return tokenize(src).some(breaksLine);
+}
+
+const OPENS = new Set<string>(["(", "{", ";"]);
+const CLOSES = new Set<string>([")", "}", ",", ";"]);
+
+/**
+ * The formula on one line, as it reads typed that way in Excel's formula bar: whitespace
+ * that holds a line break (with the indentation after it) becomes nothing after `(`, `{` or `;`,
+ * before `)`, `}`, `,` or `;` and at either end, and one space everywhere else (after `,`
+ * that gives `f(a, b)`; between operands it keeps the intersection operator, elsewhere two
+ * tokens apart). Whitespace without a line break and the text of strings stay as they are,
+ * so the result equals the input modulo whitespace, token for token.
+ */
+export function oneLine(src: string): string {
+  if (!hasLayoutBreaks(src)) return src;
+  const toks = tokenize(src).filter((t) => t.kind !== "eof");
+  let out = "";
+  for (let k = 0; k < toks.length; k++) {
+    const t = toks[k]!;
+    if (!breaksLine(t)) {
+      out += t.text;
+      continue;
+    }
+    const prev = toks[k - 1];
+    const next = toks[k + 1];
+    if (t.kind === "isect") out += " ";
+    else if (prev && next && !OPENS.has(prev.kind) && !CLOSES.has(next.kind)) out += " ";
+  }
+  return out;
+}

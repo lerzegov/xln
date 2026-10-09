@@ -23,7 +23,7 @@
 
 import { columnName, formatCell } from "../file/cellref.js";
 import type { DefinedName, WorkbookSnapshot } from "../file/types.js";
-import { equalModuloWhitespace } from "../lang/format.js";
+import { equalModuloWhitespace, hasLayoutBreaks, oneLine } from "../lang/format.js";
 import { quoteSheet } from "../lang/tokens.js";
 import { compileWithDiagnostics, decompile, type WorkbookLink } from "../lang/transform.js";
 import { definitionTarget } from "../project/classify.js";
@@ -31,7 +31,7 @@ import { layoutToLf } from "../project/layout.js";
 import { definitionHash, definitionHashLike, definitionHashV2, explicitSpill, isV2Hash, type LockCell, type Lockfile } from "../project/lockfile.js";
 import { formatCellAddress } from "../project/module.js";
 import { cellStatements, parseCellRange, rangeText, sameFilled, sheetFormulaCells, type SheetFormulaCells, type ValueCells } from "../project/statements.js";
-import type { Change, Scope } from "./changes.js";
+import { ONE_LINE_AS_WORKBOOK, ONE_LINE_NEW, type Change, type Scope, type SetCellFormula } from "./changes.js";
 import type { Conflict, ExcelChange, NameState } from "./plan.js";
 import type { SourceCell, SourceProblem } from "./source.js";
 
@@ -469,10 +469,19 @@ export function planCells(input: CellPlanInput): CellPlan {
         out.changes.push(ch);
       }
     } else {
-      const ch: Change = { op: "set-cell-formula", sheet: curSheet, range: curRange, stored: srcStored, display: c.formula };
+      // Cells keep the workbook's layout (author's decision, 2026-10-09): a formula Excel
+      // had on one line is written on one line, though pull laid it out on several in the
+      // source; one laid out by hand in Excel keeps the source's layout. A new formula (a
+      // slot) is written on one line, as Excel's own cells mostly are.
+      const prev = xl.kind === "formula" || xl.kind === "mixed" ? xl.stored : undefined;
+      const flat = (prev === undefined || !hasLayoutBreaks(prev)) && hasLayoutBreaks(srcStored);
+      const stored = flat ? oneLine(srcStored) : srcStored;
+      const ch: SetCellFormula = { op: "set-cell-formula", sheet: curSheet, range: curRange, stored, display: flat ? oneLine(c.formula) : c.formula };
       if (info) ch.name = info.key;
-      if (xl.kind === "formula" || xl.kind === "mixed") ch.previous = xl.stored;
+      if (prev !== undefined) ch.previous = prev;
+      if (flat) ch.layout = prev === undefined ? ONE_LINE_NEW : ONE_LINE_AS_WORKBOOK;
       out.changes.push(ch);
+      state.stored = stored;
     }
     out.inSync.push(state);
   }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { compile, decompile, equalModuloWhitespace, prettyPrint } from "../../src/index.js";
+import { compile, decompile, equalModuloWhitespace, hasLayoutBreaks, oneLine, prettyPrint } from "../../src/index.js";
 
 describe("equalModuloWhitespace", () => {
   it("ignores layout, as Excel re-spaces (T14)", () => {
@@ -94,5 +94,43 @@ describe("prettyPrint", () => {
     const pretty = prettyPrint(decompile(stored), { width: 40 });
     expect(pretty.split("\n").length).toBeGreaterThan(3);
     expect(equalModuloWhitespace(compile(pretty, { names: ["Periods"] }), stored)).toBe(true);
+  });
+});
+
+describe("oneLine (cells keep the workbook's layout)", () => {
+  it("joins pull's layout the way the formula bar reads it", () => {
+    expect(oneLine("LET(\n    x, A1*10,\n    y, 2,\n    x + y\n)")).toBe("LET(x, A1*10, y, 2, x + y)");
+    expect(oneLine("LAMBDA(a, b,\n    a + b\n)(1, 2)")).toBe("LAMBDA(a, b, a + b)(1, 2)");
+    expect(oneLine("IF(\r\n  A1 > 0,\r\n  1,\r\n  2\r\n)")).toBe("IF(A1 > 0, 1, 2)");
+    expect(oneLine("\n  SUM(A1:A3)\n")).toBe("SUM(A1:A3)");
+    expect(oneLine("{1,\n 2;\n 3,4}")).toBe("{1, 2;3,4}");
+    expect(oneLine("A1 +\n    B1")).toBe("A1 + B1");
+    expect(oneLine("A1\n+ B1")).toBe("A1 + B1");
+  });
+  it("keeps strings, spaces on one line, and the intersection operator", () => {
+    expect(oneLine('CONCAT(\n    "a\nb",\n    "  c  "\n)')).toBe('CONCAT("a\nb", "  c  ")');
+    expect(oneLine("SUM(A1:B5\n    B2:C3)")).toBe("SUM(A1:B5 B2:C3)");
+    expect(oneLine("SUM(  A1  ,\n B1)")).toBe("SUM(  A1  , B1)");
+    expect(oneLine('"x\ny"')).toBe('"x\ny"');
+    expect(hasLayoutBreaks('"x\ny"')).toBe(false);
+    expect(hasLayoutBreaks("LET(x,\n1, x)")).toBe(true);
+  });
+  it("equals the input modulo whitespace, and commutes with compile", () => {
+    const forms = [
+      'LET(\n    x, SEQUENCE(3),\n    s, "a\nb",\n    HSTACK(x, LEN(s))\n)',
+      "LAMBDA(n, [k],\n    IF(ISOMITTED(k), n, n*k)\n)(2)",
+      "XLOOKUP(\n    A1,\n    B1:B9,\n    C1:C9\n) + FILTER(D1#,\n    D1# > 0)",
+    ];
+    for (const src of forms) {
+      const flat = oneLine(src);
+      expect(hasLayoutBreaks(flat)).toBe(false);
+      expect(equalModuloWhitespace(flat, src)).toBe(true);
+      expect(compile(flat)).toBe(oneLine(compile(src)));
+      expect(equalModuloWhitespace(compile(flat), compile(src))).toBe(true);
+    }
+    const long = "LET(" + Array.from({ length: 8 }, (_, i) => `val_${i}, SUM(A${i + 1}:A${i + 9})`).join(", ") + ", val_0 + val_7)";
+    const pretty = prettyPrint(long, { width: 60 });
+    expect(pretty).toContain("\n");
+    expect(oneLine(pretty)).toBe(prettyPrint(long, { width: 100000 }));
   });
 });

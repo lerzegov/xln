@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.1.3 (2026-10-09)
+
+- A build writes a cell formula on one line when Excel had it on one line, even though
+  the pull spread it over several lines in the sheet file; the plan says "on one line, as
+  in the workbook". A formula laid out on several lines in Excel keeps your layout, and a
+  new formula (a slot) is written on one line. Text in quotes keeps its line breaks.
+  Names (LAMBDAs) are written as your source lays them out.
+- MCP server: `xln_build_plan` and `xln_build` return a compact change set by default
+  (what each change writes, previous cell formulas as displayed, updates of the provenance
+  tag alone counted); `detail: "full"` gives the CLI's. Every tool's structured result
+  starts with its text summary.
+
 ## 0.1.2 (2026-10-09)
 
 - Pulling twice in a row no longer refuses on a sheet name over a deleted reference: the

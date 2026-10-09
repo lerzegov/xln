@@ -68,7 +68,12 @@ with an absolute path.
 ## Tools
 
 Every result carries a short text summary and structured JSON (`structuredContent`, and
-the same JSON as a second text block for clients that read only text). Failures are MCP
+the same JSON as a second text block for clients that read only text). The summary is
+also the first field of the structured JSON (`summary`): the spec makes the text block a
+serialization of `structuredContent` "for backwards compatibility", so a client may pass
+the model only `structuredContent` when it is present. Claude Code did in the MCP trial
+of 2026-10-09 (the agent saw the plan's JSON, not its text summary; issues on Claude Code's
+tracker report the same), so nothing an agent needs is only in the text block. Failures are MCP
 tool errors (`isError`) with the CLI's wording: an unreadable file, a path outside the
 roots, a refused pull or build.
 
@@ -77,8 +82,8 @@ roots, a refused pull or build.
 | `xln_check` | no | `path` (workbook or project folder), `only?` (`["C2","C6"]`), `severity?` (`error`/`warning`/`info`/`hint`), `detail?` (`summary`/`full`), `maxFindings?` (200) | `verdict` (`errors`/`warnings`/`clean`), `ok`, `counts`, `byCheck`, the findings of C1–C13 as `xln check --json` gives them, the project's `source` findings (file:line, quick fix) when there is a project, and the census as a summary. `detail: "full"` adds the whole name census and spill census (about 250 kB on lbo-ep03r) |
 | `xln_names` | no | `path` (workbook or project folder), `query?`, `names?`, `kind?`, `scope?` (`workbook` or a sheet), `limit?` (100), `offset?` | Each name's `key`, `scope`, `kind` (constant, range, spill, table, formula, lambda, cell, slot), `definition` as Excel displays it (a named cell's formula), `doc`, `hidden`, `cell`, `params`, `libBase`, and `file` (`names/FN.xln:12`). A workbook is read as a pull would write it, without writing anything. A project folder is its source, unbuilt edits included |
 | `xln_pull` | project folder | `workbook`, `out?` (default `<workbook>.xln`), `discard?` (false) | The `xln pull --json` result: files written, report, notices. Refused, with the unbuilt edits listed, while the project has source edits not built yet |
-| `xln_build_plan` | no | `workbook`, `project?` | The `xln build --dry-run --json` result: `changeSet`, `conflicts`, `problems`, `excelChanges`, `status` (`refused` is a result here, with its reasons), plus `willWrite`, `excelOpen` and `planId` |
-| `xln_build` | workbook, backup, lockfile | `workbook`, `project?`, `out?`, `confirm` (must be `true`), `planId?` | The `xln build --json` result: `written`, `backup`, `readBack`, project files updated |
+| `xln_build_plan` | no | `workbook`, `project?`, `detail?` (`compact`/`full`) | The `xln build --dry-run --json` result: `changeSet`, `conflicts`, `problems`, `excelChanges`, `status` (`refused` is a result here, with its reasons), plus `willWrite`, `excelOpen` and `planId`. `compact` (default): each change without its stored form (`op`, name and scope or sheet and range, `display`, `fields`, `comment`), a cell's `previous` formula as Excel displays it, `layout: "one line, as in the workbook"` on a cell written on one line, embedded source as its file list, and updates of the provenance tag alone folded into `changeSet.provenanceOnly` (`count`, `names`). `full`: the CLI's change set. The `planId` is the same either way. On lbo-ep03r with 16 real changes and 22 tag updates: 9 kB of structured data instead of 22 kB |
+| `xln_build` | workbook, backup, lockfile | `workbook`, `project?`, `out?`, `confirm` (must be `true`), `planId?`, `detail?` | The `xln build --json` result: `written`, `backup`, `readBack`, project files updated; its change set compact like the plan's unless `detail: "full"` |
 | `xln_lib_status` | no | `path` (workbook or project folder), `lib?` (default the project's `xln.config.json` `"library"`), `diffs?` (true) | The `xln lib status --json` result: per library function identical, outdated, modified, both changed, differs, missing; local only; diffs |
 | `xln_formulas` | no | `workbook`, `sheet?`, `order?` (`appearance`/`calculation`), `workbookWide?` (all sheets in calculation order, the CLI's `--workbook`), `query?`, `names?`, `detail?` (`compact`/`full`), `limit?` (50), `offset?` | The `xln formulas --json` view, paged: `total`, `matched`, per-sheet counts, and per formula `sheet`, `cell` (`C6#` for a dynamic array), `kind`, `extent`, `defines` (the names on the cell or spill), `formula` as displayed, saved `value`, `reads` (names), `refs`; in calculation order also `level`, `cycle`, `dependsOn`. `detail: "full"` gives the CLI's lines (stored text, spans, value object). `query` matches `Sheet!Cell`, the formula or a defined name; `names` keeps the formulas that define or read them |
 | `xln_graph` | no | `workbook`, `maxItems?` (200) | The `xln graph --json` summary: counts, longest chain, circular references, recursive LAMBDAs, references not followed (dynamic, external, broken), C9 fixed references into a spill, C10 unused names, C12 name cycles; `totals` per list |
@@ -156,4 +161,5 @@ without `discard`, base, and publish refused without `confirm` or with a library
 the roots (configured, or through a link). `corpus.test.ts` (with `XLN_CORPUS`) runs
 check, names, pull, plan, formulas, graph and verify on a copy of every corpus workbook.
 It also checks that a summary check and a default formulas page stay under 80 kB (a
-formulas page is about 35 kB on lbo-ep03r; its full view runs to 900 kB).
+formulas page is about 35 kB on lbo-ep03r; its full view runs to 900 kB). On lbo-ep03r it plans the MCP trial's edit (FN.LAG in 18 places) and holds the compact
+plan under 12 kB, less than half the full one.
